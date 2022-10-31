@@ -1,8 +1,12 @@
-import time
 import logging
-from fastapi import Request
+import time
+import uuid
+from contextlib import contextmanager
+from contextvars import ContextVar
 
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request, Response
+
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -24,11 +28,40 @@ LOGGING_CONFIG = {
     "root": {"level": logging.DEBUG, "handlers": ["console"]},
 }
 
+REQUEST_UUID = ContextVar("REQUEST_UUID", default=None)
+
+
+@contextmanager
+def request_uuid_context():
+    request_uuid = str(uuid.uuid4())
+    token = REQUEST_UUID.set(request_uuid)
+    yield
+    REQUEST_UUID.reset(token)
+
 
 class TimerMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, next):
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         t = time.monotonic()
-        response = await next(request)
+        response = await call_next(request)
         elapsed = time.monotonic() - t
         response.headers["X-Process-Time"] = str(elapsed)
         return response
+
+
+class RequestUUIDMiddleware(BaseHTTPMiddleware):
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
+        with request_uuid_context():
+            response = await call_next(request)
+            request_uuid = REQUEST_UUID.get()
+            response.headers["X-Request-UUID"] = request_uuid
+            logging.debug(
+                "[%s] %s %s",
+                request_uuid,
+                request.url,
+                response.headers,
+            )
+            return response
