@@ -6,7 +6,7 @@ from chronal_api import __version__
 class Config(BaseSettings):
     TITLE: str = f"Chronal API {__version__}"
     VERSION: str = __version__
-    ROOT_PATH: str = "/"
+    ROOT_PATH: str = ""
     API_PREFIX: str = "/api/v1"
     DOCS_URL: str | None = "/docs"
     REDOC_URL: str | None = "/redoc"
