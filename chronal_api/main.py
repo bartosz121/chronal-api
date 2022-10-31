@@ -6,8 +6,9 @@ from starlette.middleware.cors import CORSMiddleware
 
 from chronal_api.core import debug, config
 
-api_config = config.get_config(local=True)
-# api_config = config.get_config()
+
+# api_config = config.get_config(local=True)
+api_config = config.get_config()
 
 app = FastAPI(
     title=api_config.TITLE,
@@ -17,6 +18,9 @@ app = FastAPI(
     redoc_url=api_config.REDOC_URL,
 )
 
+if api_config.IS_DEV:
+    app.add_middleware(debug.TimerMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=api_config.ALLOWED_ORIGINS,
@@ -25,8 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-if api_config.IS_DEV:
-    app.add_middleware(debug.TimerMiddleware)
+app.add_middleware(debug.RequestUUIDMiddleware)
 
 
 @app.get("/")
