@@ -7,15 +7,14 @@ from starlette.middleware.cors import CORSMiddleware
 from chronal_api.core import debug, config
 
 
-# api_config = config.get_config(local=True)
 api_config = config.get_config()
 
 app = FastAPI(
     title=api_config.TITLE,
     version=api_config.VERSION,
     root_path=api_config.ROOT_PATH,
-    docs_url=api_config.DOCS_URL,
-    redoc_url=api_config.REDOC_URL,
+    docs_url=None if api_config.DISABLE_DOCS else "/docs",
+    redoc_url=None if api_config.DISABLE_DOCS else "/redoc",
 )
 
 if api_config.IS_DEV:
@@ -34,7 +33,12 @@ app.add_middleware(debug.RequestUUIDMiddleware)
 
 @app.get("/")
 def home():
-    return {"msg": api_config.TITLE}
+    return {"msg123": api_config.TITLE}
+
+
+@app.get("/config")
+def show_config():
+    return api_config
 
 
 def run():
@@ -46,3 +50,7 @@ def run():
         host=api_config.UVICORN_HOST,
         port=api_config.UVICORN_PORT,
     )
+
+
+if __name__ == "__main__":
+    run()

@@ -8,8 +8,7 @@ class Config(BaseSettings):
     VERSION: str = __version__
     ROOT_PATH: str = ""
     API_PREFIX: str = "/api/v1"
-    DOCS_URL: str | None = "/docs"
-    REDOC_URL: str | None = "/redoc"
+    DISABLE_DOCS: bool = False
     IS_DEV: bool = True
     # CORS
     ALLOWED_ORIGINS: str
@@ -34,17 +33,5 @@ class Config(BaseSettings):
         case_sensitive = True
 
 
-def get_config(local=False):
-    if local:
-        return Config(
-            ALLOWED_ORIGINS="[*]",
-            UVICORN_RELOAD=True,
-            UVICORN_WORKERS=1,
-            UVICORN_HOST="0.0.0.0",
-            UVICORN_PORT=8081,
-            POSTGRES_SERVER="x",
-            POSTGRES_USER="x",
-            POSTGRES_PASSWORD="x",
-            POSTGRES_DB="x",
-        )
+def get_config():
     return Config()
