@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  chronal_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: run_chronal_api
+    ports:
+      - 8080:8080
+    environment:
+      - DISABLE_DOCS=True
+      - IS_DEV=False
+      - ALLOWED_ORIGINS=[*]
+      - UVICORN_RELOAD=False
+      - UVICORN_WORKERS=1
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=8080
+      - POSTGRES_SERVER=db_postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=passw0rd123!@#
+      - POSTGRES_DB=chronal_db
+    depends_on:
+      - db_postgres
+
+  db_postgres:
+    image: postgres:15.0-alpine
+    environment:
+      - POSTGRES_PASSWORD=passw0rd123!@#
+      - POSTGRES_DB=chronal_db
+    volumes:
+      - chronal_api_postgres:/var/lib/postgresql
+
+volumes:
+  chronal_api_postgres:
