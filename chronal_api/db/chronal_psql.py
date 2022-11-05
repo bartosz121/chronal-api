@@ -3,6 +3,7 @@ from typing import Generator
 
 from contextvars import ContextVar
 
+from fastapi import HTTPException
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -28,10 +29,14 @@ psql_session: ContextVar[AsyncSession] = ContextVar("psql_session")
 
 
 async def get_psql_db() -> Generator[AsyncSession, None, None]:
-    async with async_session_maker() as session, session.begin():
+    async with async_session_maker() as session:
         try:
             yield session
-            await session.commit()
         except Exception as exc:
-            logging.error("[%s] %s exception - %s", REQUEST_UUID.get(), session, exc)
+            exc_str = exc
+            if isinstance(exc, HTTPException):
+                exc_str = exc.detail
+            logging.error("[%s] %s %s", REQUEST_UUID.get(), session, exc_str)
             await session.rollback()
+        else:
+            await session.commit()
