@@ -11,12 +11,14 @@ services:
     environment:
       - DISABLE_DOCS=True
       - IS_DEV=False
+      - SECRET=secret123
       - ALLOWED_ORIGINS=[*]
       - UVICORN_RELOAD=False
       - UVICORN_WORKERS=1
       - UVICORN_HOST=0.0.0.0
       - UVICORN_PORT=8080
       - POSTGRES_SERVER=db_postgres
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=passw0rd123!@#
       - POSTGRES_DB=chronal_db

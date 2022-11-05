@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, SecretStr
 
 from chronal_api import __version__
 
@@ -12,6 +12,7 @@ class Config(BaseSettings):
     API_PREFIX: str = "/api/v1"
     DISABLE_DOCS: bool = False
     IS_DEV: bool = True
+    SECRET: str | SecretStr
     # CORS
     ALLOWED_ORIGINS: str
 

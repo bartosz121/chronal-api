@@ -10,13 +10,15 @@ services:
       - 8080:8080
     environment:
       - ALLOWED_ORIGINS=[*]
+      - SECRET=secret123
       - UVICORN_RELOAD=True
       - UVICORN_WORKERS=1
       - UVICORN_HOST=0.0.0.0
       - UVICORN_PORT=8080
       - POSTGRES_SERVER=db_postgres
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=passw0rd123!@#
+      - POSTGRES_PASSWORD=passw0rd123
       - POSTGRES_DB=chronal_db
     depends_on:
       - db_postgres
@@ -26,7 +28,8 @@ services:
   db_postgres:
     image: postgres:15.0-alpine
     environment:
-      - POSTGRES_PASSWORD=passw0rd123!@#
+      - POSTGRES_PASSWORD=passw0rd123
+      - POSTGRES_USER=admin
       - POSTGRES_DB=chronal_db
     volumes:
       - chronal_api_postgres:/var/lib/postgresql
