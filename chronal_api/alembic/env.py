@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 
 from chronal_api.core.config import get_config
 from chronal_api.db import chronal_psql
+from chronal_api.models import User
+
 
 config = get_config()
 
