@@ -23,13 +23,26 @@ def upgrade() -> None:
     op.create_table(
         "user",
         sa.Column("email", sa.String(length=320), nullable=False),
-        sa.Column("first_name", sa.String(length=255), nullable=False),
-        sa.Column("last_name", sa.String(length=255), nullable=False),
         sa.Column("hashed_password", sa.String(length=1024), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_superuser", sa.Boolean(), nullable=False),
         sa.Column("is_verified", sa.Boolean(), nullable=False),
         sa.Column("id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.TIMESTAMP(),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.TIMESTAMP(),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column("first_name", sa.String(length=255), nullable=False),
+        sa.Column("last_name", sa.String(length=255), nullable=False),
+        sa.Column("timezone", sa.String(length=64), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
