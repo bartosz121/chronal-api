@@ -5,8 +5,11 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 
 from fastapi import Request, Response
-
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+
+from chronal_api.core.config import get_config
+
+config = get_config()
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -28,15 +31,15 @@ LOGGING_CONFIG = {
     "root": {"level": logging.DEBUG, "handlers": ["console"]},
 }
 
-REQUEST_UUID = ContextVar("REQUEST_UUID", default=None)
+request_uuid_ctx = ContextVar("REQUEST_UUID", default=None)
 
 
 @contextmanager
 def request_uuid_context():
     request_uuid = str(uuid.uuid4())
-    token = REQUEST_UUID.set(request_uuid)
+    token = request_uuid_ctx.set(request_uuid)
     yield
-    REQUEST_UUID.reset(token)
+    request_uuid_ctx.reset(token)
 
 
 class TimerMiddleware(BaseHTTPMiddleware):
@@ -50,18 +53,28 @@ class TimerMiddleware(BaseHTTPMiddleware):
         return response
 
 
-class RequestUUIDMiddleware(BaseHTTPMiddleware):
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         with request_uuid_context():
-            response = await call_next(request)
-            request_uuid = REQUEST_UUID.get()
-            response.headers["X-Request-UUID"] = request_uuid
-            logging.debug(
-                "[%s] %s %s",
-                request_uuid,
-                request.url,
-                response.headers,
-            )
-            return response
+            req_url = request.url.path
+            request_uuid = request_uuid_ctx.get()
+            logging.info("[%s] Incoming request to %s", request_uuid, repr(req_url))
+            try:
+                response = await call_next(request)
+                response.headers["X-Request-UUID"] = request_uuid
+            except Exception as exc:
+                logging.error(
+                    "[%s] Request to %s failed: %s", request_uuid, repr(req_url), exc
+                )
+                raise exc
+            else:
+                logging.info(
+                    "[%s] Successful request to %s", request_uuid, repr(req_url)
+                )
+                if config.IS_DEV:
+                    logging.debug(
+                        "[%s] Response headers: %s", request_uuid, response.headers
+                    )
+                return response

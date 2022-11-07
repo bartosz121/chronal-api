@@ -34,7 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(debug.RequestUUIDMiddleware)
+app.add_middleware(debug.RequestLoggingMiddleware)
 
 
 @app.on_event("startup")
