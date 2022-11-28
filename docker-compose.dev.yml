@@ -5,10 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: run_chronal_api
+    command: poetry run run_chronal_api
     ports:
       - 8080:8080
     environment:
+      - IS_DEV=True
       - ALLOWED_ORIGINS=[*]
       - SECRET=secret123
       - UVICORN_RELOAD=True
@@ -20,10 +21,17 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=passw0rd123
       - POSTGRES_DB=chronal_db
+      - TEST_POSTGRES_SERVER=db_postgres_test
+      - TEST_POSTGRES_PORT=5432
+      - TEST_POSTGRES_USER=admin_test
+      - TEST_POSTGRES_PASSWORD=passw0rd123
+      - TEST_POSTGRES_DB=chronal_db_test
+
     depends_on:
       - db_postgres
+      - db_postgres_test
     volumes:
-      - ./:/usr/src/app
+      - ./:/app
 
   db_postgres:
     image: postgres:15.0-alpine
@@ -34,5 +42,15 @@ services:
     volumes:
       - chronal_api_postgres:/var/lib/postgresql
 
+  db_postgres_test:
+    image: postgres:15.0-alpine
+    environment:
+      - POSTGRES_PASSWORD=passw0rd123
+      - POSTGRES_USER=admin_test
+      - POSTGRES_DB=chronal_db_test
+    volumes:
+      - chronal_api_postgres_test_db:/var/lib/postgresql
+
 volumes:
   chronal_api_postgres:
+  chronal_api_postgres_test_db:
