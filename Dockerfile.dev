@@ -1,16 +1,20 @@
-FROM python:3.10.8-slim-buster
+FROM python:3.10.8 AS development
 
-RUN apt-get update
+ENV POETRY_VERSION=1.1.13
+ENV POETRY_VIRTUALENVS_CREATE=false
+ENV POETRY_NO_INTERACTION=1
+ENV POETRY_HOME="/opt/poetry"
 
-RUN apt-get install curl vim -y
+ENV PATH="$POETRY_HOME/bin:$PATH"
 
-WORKDIR /usr/src/app
+RUN pip install poetry==${POETRY_VERSION}
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+WORKDIR /app
 
-RUN pip install --upgrade pip
+COPY poetry.lock pyproject.toml ./
 
-COPY . .
+RUN poetry install
 
-RUN pip install -e /usr/src/app
+COPY . ./
+
+CMD ["poetry", "run", "run_chronal_api"]
