@@ -7,8 +7,8 @@ from fastapi_users.authentication import (
     JWTStrategy,
 )
 
-from chronal_api.core import get_user_manager
 from chronal_api.core.config import get_config
+from chronal_api.core.user_manager import get_user_manager
 from chronal_api.models import User
 
 config = get_config()
