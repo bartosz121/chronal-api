@@ -10,6 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from chronal_api.core.config import get_config
 
 config = get_config()
+logger = logging.getLogger(__name__)
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -31,7 +32,7 @@ LOGGING_CONFIG = {
     "root": {"level": logging.DEBUG, "handlers": ["console"]},
 }
 
-request_uuid_ctx = ContextVar("REQUEST_UUID", default=None)
+request_uuid_ctx = ContextVar[str | None]("REQUEST_UUID", default=None)
 
 
 @contextmanager
@@ -48,8 +49,10 @@ class TimerMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         t = time.monotonic()
         response = await call_next(request)
-        elapsed = time.monotonic() - t
-        response.headers["X-Process-Time"] = str(elapsed)
+        elapsed = str(time.monotonic() - t)
+        request_uuid = response.headers.get("x-request-uuid", None)
+        response.headers["X-Process-Time"] = elapsed
+        logger.debug("[%s] %s TIME: %s", request_uuid, repr(request.url.path), elapsed)
         return response
 
 
@@ -60,21 +63,21 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         with request_uuid_context():
             req_url = request.url.path
             request_uuid = request_uuid_ctx.get()
-            logging.info("[%s] Incoming request to %s", request_uuid, repr(req_url))
+            logger.info("[%s] Incoming request to %s", request_uuid, repr(req_url))
             try:
                 response = await call_next(request)
-                response.headers["X-Request-UUID"] = request_uuid
+                response.headers["X-Request-UUID"] = str(request_uuid)
             except Exception as exc:
-                logging.error(
+                logger.error(
                     "[%s] Request to %s failed: %s", request_uuid, repr(req_url), exc
                 )
                 raise exc
             else:
-                logging.info(
+                logger.info(
                     "[%s] Successful request to %s", request_uuid, repr(req_url)
                 )
                 if config.IS_DEV:
-                    logging.debug(
+                    logger.debug(
                         "[%s] Response headers: %s", request_uuid, response.headers
                     )
                 return response
