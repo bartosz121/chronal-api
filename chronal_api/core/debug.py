@@ -50,9 +50,16 @@ class TimerMiddleware(BaseHTTPMiddleware):
         t = time.monotonic()
         response = await call_next(request)
         elapsed = str(time.monotonic() - t)
-        request_uuid = response.headers.get("x-request-uuid", None)
+        req_uuid = response.headers.get("x-request-uuid", None)
+        req_method = request.method
         response.headers["X-Process-Time"] = elapsed
-        logger.debug("[%s] %s TIME: %s", request_uuid, repr(request.url.path), elapsed)
+        logger.debug(
+            "[%s][%s] %s TIME: %s",
+            req_uuid,
+            req_method,
+            repr(request.url.path),
+            elapsed,
+        )
         return response
 
 
@@ -62,22 +69,38 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         with request_uuid_context():
             req_url = request.url.path
-            request_uuid = request_uuid_ctx.get()
-            logger.info("[%s] Incoming request to %s", request_uuid, repr(req_url))
+            req_method = request.method
+            req_uuid = request_uuid_ctx.get()
+            logger.info(
+                "[%s][%s] Incoming request to %s",
+                req_uuid,
+                req_method,
+                repr(req_url),
+            )
             try:
                 response = await call_next(request)
-                response.headers["X-Request-UUID"] = str(request_uuid)
+                response.headers["X-Request-UUID"] = str(req_uuid)
             except Exception as exc:
                 logger.error(
-                    "[%s] Request to %s failed: %s", request_uuid, repr(req_url), exc
+                    "[%s][%s] Request to %s failed: %s",
+                    req_method,
+                    req_uuid,
+                    repr(req_url),
+                    exc,
                 )
                 raise exc
             else:
                 logger.info(
-                    "[%s] Successful request to %s", request_uuid, repr(req_url)
+                    "[%s][%s] Successful request to %s",
+                    req_uuid,
+                    req_method,
+                    repr(req_url),
                 )
                 if config.IS_DEV:
                     logger.debug(
-                        "[%s] Response headers: %s", request_uuid, response.headers
+                        "[%s][%s] Response headers: %s",
+                        req_uuid,
+                        req_method,
+                        response.headers,
                     )
                 return response
