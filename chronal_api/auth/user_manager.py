@@ -1,15 +1,13 @@
-import uuid
 import logging
+import uuid
 from typing import Optional
 
-from fastapi import Request, Depends
+from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
-from fastapi_users.db import SQLAlchemyUserDatabase
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from chronal_api.core.config import get_config
-from chronal_api.db import chronal_psql
-from chronal_api.models import User
+
+from .models import User
 
 config = get_config()
 
@@ -36,11 +34,3 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         logging.debug(
             "Verification requested for user %s. Verification token: %s", user.id, token
         )
-
-
-async def get_user_db(session: AsyncSession = Depends(chronal_psql.get_psql_db)):
-    yield SQLAlchemyUserDatabase(session, User)
-
-
-async def get_user_manager(user_db=Depends(get_user_db)):
-    yield UserManager(user_db)
