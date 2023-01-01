@@ -28,5 +28,8 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     )
     calendars = relationship("Calendar", back_populates="owner", cascade="all, delete")
     accesses = relationship(
-        "CalendarAccess", back_populates="user", passive_deletes=True
+        "CalendarAccess",
+        back_populates="user",
+        passive_deletes=True,
+        foreign_keys="CalendarAccess.user_id",
     )
