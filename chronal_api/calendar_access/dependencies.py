@@ -167,9 +167,6 @@ async def before_delete_check(
     `Returns: CalendarAccess`
     `Depends: get_user, has_sufficient_access_to_delete, has_owner_access`
     """
-    print(f"{vars(user)=}")
-    print(f"{vars(user_calendar_access)=}")
-    print(f"{vars(calendar_access)=}")
     if user.id == calendar_access.user_id:
         if user_calendar_access.role == CalendarAccessRole.OWNER.value:
             raise HTTPException(
@@ -187,7 +184,6 @@ async def before_delete_check(
             detail="Unauthorized",
         )
     else:
-        print("in else")
         if (
             user_calendar_access.role == CalendarAccessRole.MODERATOR.value
             and calendar_access.role
