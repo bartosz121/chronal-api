@@ -1,16 +1,18 @@
-import uvicorn
 import logging
-from pkg_resources import resource_filename
 
+import uvicorn
 from alembic.command import upgrade
 from alembic.config import Config
 from fastapi import FastAPI
+from pkg_resources import resource_filename
 from starlette.middleware.cors import CORSMiddleware
 
-from chronal_api.auth import fastapi_users, auth_backend
+from chronal_api.auth.schemas import UserCreate, UserRead, UserUpdate
+from chronal_api.auth.service import auth_backend, fastapi_users
+from chronal_api.calendar.router import router as calendar_router
+from chronal_api.calendar_access.router import router as calendar_access_router
 from chronal_api.core import debug
 from chronal_api.core.config import get_config
-from chronal_api.schemas import UserCreate, UserRead, UserUpdate
 from chronal_api.utils import create_router_prefix
 
 config = get_config()
@@ -19,12 +21,11 @@ app = FastAPI(
     title=config.TITLE,
     version=config.VERSION,
     root_path=config.ROOT_PATH,
-    docs_url=None if config.DISABLE_DOCS else "/docs",
-    redoc_url=None if config.DISABLE_DOCS else "/redoc",
+    docs_url="/docs" if config.IS_DEV else None,
+    redoc_url="/redoc" if config.IS_DEV else None,
+    openapi_url="/openapi.json" if config.IS_DEV else None,
 )
 
-if config.IS_DEV:
-    app.add_middleware(debug.TimerMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,6 +36,9 @@ app.add_middleware(
 )
 
 app.add_middleware(debug.RequestLoggingMiddleware)
+
+if config.IS_DEV:
+    app.add_middleware(debug.TimerMiddleware)
 
 
 @app.on_event("startup")
@@ -76,14 +80,14 @@ app.include_router(
 # ----------------------------------
 
 
+app.include_router(calendar_access_router)
+
+app.include_router(calendar_router)
+
+
 @app.get("/")
 def home():
     return {"msg": config.TITLE}
-
-
-@app.get("/config")
-def show_config():
-    return config
 
 
 def run():
