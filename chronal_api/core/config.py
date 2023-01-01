@@ -14,15 +14,15 @@ class Config(BaseSettings):
     IS_DEV: bool = True
     SECRET: str | SecretStr
     # CORS
-    ALLOWED_ORIGINS: str
+    ALLOWED_ORIGINS: str = "[*]"
 
     # uvicorn
-    UVICORN_RELOAD: bool
-    UVICORN_WORKERS: int
-    UVICORN_HOST: str
-    UVICORN_PORT: int
+    UVICORN_RELOAD: bool = True
+    UVICORN_WORKERS: int = 1
+    UVICORN_HOST: str = "0.0.0.0"
+    UVICORN_PORT: int = 8080
 
-    # Databases
+    # Db
     POSTGRES_SERVER: str
     POSTGRES_PORT: str
     POSTGRES_USER: str
