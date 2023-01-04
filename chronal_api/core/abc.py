@@ -1,20 +1,21 @@
 import uuid
 from typing import Any, Generic, Iterable, Optional, TypeVar
 
-from pydantic import BaseModel
 from sqlalchemy import delete as sqla_delete
 from sqlalchemy import update as sqla_update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import RelationshipProperty
 
+from chronal_api.schemas import ORJSONModel
+
 from .db import Base
 
 UUID = uuid.UUID | str
 
 Model = TypeVar("Model", bound=Base)
-CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
-UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
+CreateSchema = TypeVar("CreateSchema", bound=ORJSONModel)
+UpdateSchema = TypeVar("UpdateSchema", bound=ORJSONModel)
 
 
 class BaseService(Generic[Model, CreateSchema, UpdateSchema]):

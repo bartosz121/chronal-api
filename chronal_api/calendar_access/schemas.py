@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, validator
-
 from chronal_api.calendar_access.models import CalendarAccessRole
 from chronal_api.core.abc import UUID
+from chronal_api.schemas import ORJSONModel
 
 
-class BaseCalendarAccess(BaseModel):
+class BaseCalendarAccess(ORJSONModel):
     class Config:
         orm_mode = True
 
