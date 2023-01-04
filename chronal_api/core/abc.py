@@ -18,7 +18,7 @@ UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
 
 class BaseService(Generic[Model, CreateSchema, UpdateSchema]):
-    def __init__(self, session: AsyncSession, model: type[Base]) -> None:
+    def __init__(self, session: AsyncSession, model: type[Model]) -> None:
         self.session = session
         self.model = model
 
