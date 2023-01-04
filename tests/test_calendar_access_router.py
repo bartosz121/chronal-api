@@ -58,7 +58,7 @@ async def test_calendars_access_me(user0_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_calendars_access_me(superuser_client: AsyncClient):
+async def test_calendars_access_me_superuser_access_all(superuser_client: AsyncClient):
     user0_access_len = len(AUTH_CLIENT_USER0_CALENDARS) + len(
         AUTH_CLIENT_USER0_ACCESS_LIST
     )

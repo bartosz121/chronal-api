@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import AsyncGenerator
 
 import httpx
 import pytest
@@ -26,7 +27,7 @@ from .data import (
     user_password,
 )
 
-test_config = TestConfig()
+test_config = TestConfig()  # type: ignore https://github.com/pydantic/pydantic/issues/3753
 
 
 @pytest.fixture(scope="session")
@@ -76,7 +77,9 @@ async def session(engine: AsyncEngine):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def client(session: AsyncSession) -> httpx.AsyncClient:
+async def client(
+    session: AsyncSession,
+) -> AsyncGenerator[httpx.AsyncClient, None]:
     app.dependency_overrides[get_db_session] = lambda: session
 
     async with httpx.AsyncClient(app=app, base_url="http://test") as ac:
