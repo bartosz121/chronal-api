@@ -25,7 +25,7 @@ class CalendarAccess(Base):
     calendar_id = Column[UUID](GUID, ForeignKey("calendars.id", ondelete="CASCADE"))
     user_id = Column[UUID](GUID, ForeignKey("users.id", ondelete="CASCADE"))
     role = Column[CalendarAccessRole](
-        SqlaEnum(CalendarAccessRole, name="calendar_access_role"),
+        SqlaEnum(CalendarAccessRole, name="calendar_access_role"),  # type: ignore
         nullable=False,
         default=CalendarAccessRole.GUEST,
     )

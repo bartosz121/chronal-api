@@ -171,7 +171,7 @@ async def create_calendar_access(
     service: CalendarAccessService = Depends(get_calendar_access_service),
 ):
     try:
-        await user_manager.get(data.user_id)
+        await user_manager.get(data.user_id)  # type: ignore
     except UserNotExists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

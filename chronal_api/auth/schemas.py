@@ -8,7 +8,7 @@ from pydantic.fields import ModelField
 
 from chronal_api.core.config import get_config
 
-TIMEZONES = pendulum.timezones
+TIMEZONES = pendulum.timezones  # type: ignore
 config = get_config()
 
 
