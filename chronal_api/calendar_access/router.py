@@ -58,7 +58,7 @@ async def get_user_access_list(
     response_model=list[CalendarAccessRead],
     dependencies=[Depends(get_superuser)],
 )
-async def get_user_access_list(
+async def get_access_list_by_user(
     user_id: str,
     service: CalendarAccessService = Depends(get_calendar_access_service),
 ):
