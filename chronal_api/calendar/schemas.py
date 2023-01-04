@@ -2,13 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
-
 from chronal_api.auth.schemas import UserRead
 from chronal_api.calendar_access.schemas import CalendarAccessRead
+from chronal_api.schemas import ORJSONModel
 
 
-class BaseCalendar(BaseModel):
+class BaseCalendar(ORJSONModel):
     name: str
     description: Optional[str]
 
