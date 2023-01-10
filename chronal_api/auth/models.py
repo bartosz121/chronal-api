@@ -27,6 +27,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
         onupdate=func.now(),
     )
     calendars = relationship("Calendar", back_populates="owner", cascade="all, delete")
+    created_events = relationship("Event", back_populates="author")
     accesses = relationship(
         "CalendarAccess",
         back_populates="user",
