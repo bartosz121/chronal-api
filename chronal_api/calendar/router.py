@@ -19,7 +19,7 @@ from chronal_api.calendar_access.dependencies import (
     check_if_already_has_access,
     get_calendar_access_service,
     has_calendar_access,
-    has_owner_access,
+    has_modify_access,
 )
 from chronal_api.calendar_access.schemas import (
     CalendarAccessCreateApi,
@@ -28,6 +28,7 @@ from chronal_api.calendar_access.schemas import (
 )
 from chronal_api.calendar_access.service import CalendarAccessService
 from chronal_api.calendar_access.utils import get_path_for as ca_router_get_path_for
+from chronal_api.events.router import calendar_events_subrouter
 from chronal_api.schemas import ExceptionModel, ResourceUrl
 from chronal_api.utils import create_router_prefix
 
@@ -40,6 +41,9 @@ router = APIRouter(
     tags=["calendars"],
     dependencies=[Depends(get_user)],
 )
+
+
+router.include_router(calendar_events_subrouter)
 
 
 @router.get(
@@ -91,7 +95,7 @@ async def create_calendar(
 @router.patch(
     "/{calendar_id}",
     response_model=ResourceUrl,
-    dependencies=[Depends(has_owner_access)],
+    dependencies=[Depends(has_modify_access)],
 )
 async def update_calendar(
     calendar_id: str,
@@ -110,7 +114,7 @@ async def update_calendar(
     "/{calendar_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     responses={status.HTTP_204_NO_CONTENT: {"model": None}},
-    dependencies=[Depends(has_owner_access)],
+    dependencies=[Depends(has_modify_access)],
 )
 async def delete_calendar(
     calendar_id: str,
@@ -142,7 +146,7 @@ async def get_calendar_access_list(
     status_code=status.HTTP_201_CREATED,
     response_model=ResourceUrl,
     dependencies=[
-        Depends(has_owner_access),
+        Depends(has_modify_access),
         Depends(check_if_already_has_access),
     ],
     tags=["calendar-access"],
