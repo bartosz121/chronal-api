@@ -35,7 +35,6 @@ router = APIRouter(
 async def get_all(
     service: CalendarAccessService = Depends(get_calendar_access_service),
 ):
-
     all_ca = await service.get_all()
     return all_ca
 
@@ -48,7 +47,6 @@ async def get_user_access_list(
     user: User = Depends(get_user),
     service: CalendarAccessService = Depends(get_calendar_access_service),
 ):
-
     all_ca = await service.get_access_list_for_user(user.id)
     return all_ca
 
@@ -62,7 +60,6 @@ async def get_access_list_by_user(
     user_id: str,
     service: CalendarAccessService = Depends(get_calendar_access_service),
 ):
-
     user_ca = await service.get_access_list_for_user(user_id)
     return user_ca
 

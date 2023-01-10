@@ -101,7 +101,6 @@ async def has_calendar_access(
     """
     if user.is_superuser:
         return CalendarAccess
-
     try:
         access = await service.get_calendar_access_for_user(calendar.id, user.id)
     except ValueError:
@@ -113,7 +112,7 @@ async def has_calendar_access(
         return access
 
 
-async def has_owner_access(
+async def has_modify_access(
     user: User = Depends(get_user),
     calendar_access: CalendarAccess = Depends(has_calendar_access),
 ) -> CalendarAccess:
@@ -121,15 +120,16 @@ async def has_owner_access(
     `Returns: CalendarAccess`
     `Depends: has_calendar_access`
     """
-    if user.is_superuser:
+    if user.is_superuser or calendar_access.role in (
+        CalendarAccessRole.OWNER.value,
+        CalendarAccessRole.MODERATOR.value,
+    ):
         return calendar_access
 
-    if calendar_access.role != CalendarAccessRole.OWNER.value:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You don't have sufficient access",
-        )
-    return calendar_access
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You don't have sufficient access",
+    )
 
 
 async def check_if_already_has_access(
@@ -165,8 +165,9 @@ async def before_delete_check(
     3. Moderator should not be able to remove owner access
 
     `Returns: CalendarAccess`
-    `Depends: get_user, has_sufficient_access_to_delete, has_owner_access`
+    `Depends: get_user, has_calendar_access, valid_calendar_access_id`
     """
+    # FIXME has_modify_access
     if user.id == calendar_access.user_id:
         if user_calendar_access.role == CalendarAccessRole.OWNER.value:
             raise HTTPException(
