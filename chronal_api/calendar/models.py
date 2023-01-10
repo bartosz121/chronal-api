@@ -32,7 +32,13 @@ class Calendar(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
     owner = relationship("User", back_populates="calendars")
+    events = relationship(
+        "Event",
+        back_populates="calendar",
+        passive_deletes=True,
+    )
     access_list = relationship(
         "CalendarAccess", back_populates="calendar", cascade="all, delete"
     )
@@ -43,8 +49,6 @@ class Calendar(Base):
 
 @event.listens_for(Calendar, "after_insert")
 def create_calendar_access_for_owner(mapper, connection, target: Calendar):
-    ACCESS_OWNER_DB_ID = 1
-    logging.debug(f"Creating owner access for Calendar #{target.id}")
     connection.execute(
         insert(CalendarAccess).values(
             calendar_id=target.id,
