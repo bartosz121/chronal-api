@@ -61,7 +61,9 @@ class BaseService(Generic[Model, CreateSchema, UpdateSchema]):
 
     async def update(self, obj_id: UUID, data: UpdateSchema) -> UUID:
         await self.session.execute(
-            sqla_update(self.model).where(self.model.id == obj_id).values(**data.dict())
+            sqla_update(self.model)
+            .where(self.model.id == obj_id)
+            .values(**data.dict(exclude_unset=True))
         )
 
         return obj_id
