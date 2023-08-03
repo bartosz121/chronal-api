@@ -1,6 +1,17 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from chronal_api.settings import UvicornSettings, get_app_settings
+
+app_settings = get_app_settings()
+
+app = FastAPI(
+    title=app_settings.TITLE,
+    version=app_settings.VERSION,
+    debug=app_settings.DEBUG,
+    docs_url=None if app_settings.ENVIRONMENT.is_production else "/docs",
+    redoc_url=None if app_settings.ENVIRONMENT.is_production else "/redoc",
+)
+
 
 
 @app.get("/")
@@ -11,7 +22,7 @@ async def index() -> dict[str, str]:
 def run():
     import uvicorn
 
-    uvicorn.run("chronal_api.main:app", host="127.0.0.1", port=8080, reload=True)
+    uvicorn.run("chronal_api.main:app", **UvicornSettings().model_dump())
 
 
 if __name__ == "__main__":
