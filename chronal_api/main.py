@@ -1,6 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from chronal_api.settings import UvicornSettings, get_app_settings
+from chronal_api.settings import CORSSettings, UvicornSettings, get_app_settings
 
 app_settings = get_app_settings()
 
@@ -12,6 +13,7 @@ app = FastAPI(
     redoc_url=None if app_settings.ENVIRONMENT.is_production else "/redoc",
 )
 
+app.add_middleware(CORSMiddleware, **CORSSettings().model_dump())
 
 
 @app.get("/")
