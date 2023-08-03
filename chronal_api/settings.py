@@ -52,6 +52,7 @@ class DatabaseSettings(BaseSettings):
     PORT: int = 5432
     NAME: str = "chronaldb"
     DRIVER: str = "asyncpg"
+    ECHO: bool = False
 
     @property
     def url(self) -> str:
