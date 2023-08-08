@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Coroutine, Generic, Sequence, TypeVar
 from uuid import UUID
 
-from sqlalchemy import Column, select
+from sqlalchemy import Column
 from sqlalchemy import func as sqla_func
+from sqlalchemy import select
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -226,7 +227,12 @@ class SQLAlchemyRepository(Repository[T, U]):
         self.statement = select(self.model)
 
     async def count(self) -> int:
-        return await super().count()
+        s = self.statement.with_only_columns(
+            sqla_func.count(self.model_id_attr),
+            maintain_column_froms=True,
+        ).order_by(None)
+        result = await self.session.execute(s)
+        return result.scalar_one()
 
     async def create(self, data: T) -> T:
         return await super().create(data)
