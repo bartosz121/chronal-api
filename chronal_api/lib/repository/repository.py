@@ -1,15 +1,11 @@
 # mostly stolen from https://github.com/litestar-org/litestar/blob/2744bf4b8fb7d8b8886229aa71fa1ee8d9a3ffde/litestar/contrib/repository/abc/_async.py
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Coroutine, Generic, Sequence, TypeVar
-from uuid import UUID
+from typing import Any, Generic, Sequence, TypeVar
 
 from sqlalchemy import Column
-from sqlalchemy import func as sqla_func
-from sqlalchemy import select
 
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
+from .exceptions import NotFoundError
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -26,6 +22,12 @@ class Repository(Generic[T, U], ABC):
     @property
     def model_id_attr(self) -> Column[U]:
         return getattr(self.model, self.model_id_attr_name)
+
+    @staticmethod
+    async def check_not_found(item: T | None) -> T:
+        if item is None:
+            raise NotFoundError("No record found.")
+        return item
 
     @abstractmethod
     async def count(self) -> int:
@@ -218,60 +220,3 @@ class Repository(Generic[T, U], ABC):
         Returns:
             list[T]: The upserted records.
         """
-
-
-class SQLAlchemyRepository(Repository[T, U]):
-    def __init__(self, session: "AsyncSession", *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.session = session
-        self.statement = select(self.model)
-
-    async def count(self) -> int:
-        s = self.statement.with_only_columns(
-            sqla_func.count(self.model_id_attr),
-            maintain_column_froms=True,
-        ).order_by(None)
-        result = await self.session.execute(s)
-        return result.scalar_one()
-
-    async def create(self, data: T) -> T:
-        return await super().create(data)
-
-    async def create_many(self, data: Sequence[T]) -> list[T]:
-        return await super().create_many(data)
-
-    async def delete(self, id: U) -> T:
-        return await super().delete(id)
-
-    async def delete_many(self, ids: Sequence[U]) -> list[T]:
-        return await super().delete_many(ids)
-
-    async def exists(self, **kwargs: Any) -> bool:
-        return await super().exists(**kwargs)
-
-    async def get(self, id: U, **kwargs: Any) -> T:
-        return await super().get(id, **kwargs)
-
-    async def get_one(self, id: U, **kwargs: Any) -> T:
-        return await super().get_one(id, **kwargs)
-
-    async def get_one_or_none(self, id: U, **kwargs: Any) -> T | None:
-        return await super().get_one_or_none(id, **kwargs)
-
-    async def list_(self, **kwargs: Any) -> list[T]:
-        return await super().list_(**kwargs)
-
-    async def list_and_count(self, **kwargs: Any) -> tuple[list[T], int]:
-        return await super().list_and_count(**kwargs)
-
-    async def update(self, data: T) -> T:
-        return await super().update(data)
-
-    async def update_many(self, data: Sequence[T]) -> list[T]:
-        return await super().update_many(data)
-
-    async def upsert(self, data: T) -> T:
-        return await super().upsert(data)
-
-    async def upsert_many(self, data: Sequence[T]) -> list[T]:
-        return await super().upsert_many(data)
