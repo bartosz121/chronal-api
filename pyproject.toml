@@ -23,18 +23,21 @@ path = "chronal_api/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
-    "fastapi>=0.100.1",
+    "fastapi>=0.101.1",
     "pip-tools>=7.1.0",
     "pydantic-settings>=2.0.2",
     "uvicorn>=0.23.2",
-    "coverage[toml]>=6.5",
-    "pytest",
     "colorama>=0.4;sys_platform == 'win32'",
     "httptools>=0.5.0",
     "python-dotenv>=0.13",
     "uvloop>=0.14.0,!=0.15.0,!=0.15.1; sys_platform != 'win32' and (sys_platform != 'cygwin' and platform_python_implementation != 'PyPy')",
     "watchfiles>=0.13",
     "websockets>=10.4",
+    "SQLAlchemy[asyncio]>=2.0.19",
+    "aiosqlite>=0.19.0",
+    "asyncpg>=0.28.0",
+    "alembic>=1.11.2",
+    "pysqlite3-binary>=0.5.1",
 ]
 [tool.hatch.envs.default.scripts]
 requirements = "hatch dep show requirements --all | pip-compile --generate-hashes --annotate --resolver=backtracking -U -o requirements.txt -"
@@ -56,6 +59,10 @@ extra-dependencies = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
     "coverage>=7.2.7",
+    "httpx>=0.24.1",
+    "coverage[toml]>=6.5",
+    "pytest>=7.4.0",
+
 ]
 
 [tool.hatch.envs.dev.scripts]
@@ -64,7 +71,7 @@ check = [
     "black --check --diff {args:.}",
     "mypy --install-types --non-interactive {args:chronal_api tests}",
 ]
-lint = ["black {args:.}", "ruff --fix {args:.}", "check"]
+lint = ["black {args:.}", "ruff --fix {args:.}"]
 all = ["check", "lint"]
 
 [tool.black]
@@ -75,8 +82,11 @@ line-length = 120
 target-version = "py311"
 line-length = 120
 unfixable = [
-    # Don't touch unused imports
-    "F401",
+    "F401", # Don't touch unused imports
+    "F841", # Don't touch unused variables
+]
+ignore = [
+    "E501", # Don't touch line length
 ]
 
 [tool.ruff.isort]
