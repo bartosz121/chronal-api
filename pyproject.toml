@@ -73,6 +73,9 @@ check = [
 ]
 lint = ["black {args:.}", "ruff --fix {args:.}"]
 all = ["check", "lint"]
+test = "pytest tests {args:tests}"
+test-lib = "pytest tests_lib {args:tests}"
+test-all = ["test", "test-lib"]
 
 [tool.black]
 target-version = ["py311"]
