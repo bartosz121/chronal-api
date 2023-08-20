@@ -2,6 +2,7 @@
   "python.analysis.typeCheckingMode": "basic",
   "[python]": {
     "editor.formatOnSave": true,
+    "editor.rulers": [120],
     "editor.codeActionsOnSave": {
       "source.fixAll": true,
       "source.organizeImports": true
