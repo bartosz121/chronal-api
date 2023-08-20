@@ -1,7 +1,7 @@
 # mostly stolen from https://github.com/litestar-org/litestar/blob/2744bf4b8fb7d8b8886229aa71fa1ee8d9a3ffde/litestar/contrib/repository/abc/_async.py
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Sequence, TypeVar
+from typing import Any, Generic, TypeVar
 
 from sqlalchemy import Column
 
@@ -51,12 +51,12 @@ class Repository(Generic[T, U], ABC):
         """
 
     @abstractmethod
-    async def create_many(self, data: Sequence[T]) -> list[T]:
+    async def create_many(self, data: list[T]) -> list[T]:
         """
         Create many records in the table.
 
         Args:
-            data (Sequence[T]): The data to create the records with.
+            data (list[T]): The data to create the records with.
 
         Returns:
             list[T]: The created records.
@@ -78,12 +78,12 @@ class Repository(Generic[T, U], ABC):
         """
 
     @abstractmethod
-    async def delete_many(self, ids: Sequence[U]) -> list[T]:
+    async def delete_many(self, ids: list[U]) -> list[T]:
         """
         Delete many records from the table.
 
         Args:
-            ids (Sequence[U]): The IDs of the records to delete.
+            ids (list[U]): The IDs of the records to delete.
 
         Returns:
             list[T]: The deleted records.
@@ -186,12 +186,12 @@ class Repository(Generic[T, U], ABC):
         """
 
     @abstractmethod
-    async def update_many(self, data: Sequence[T]) -> list[T]:
+    async def update_many(self, data: list[T]) -> list[T]:
         """
         Update many records in the table.
 
         Args:
-            data (Sequence[T]): The data to update the records with.
+            data (list[T]): The data to update the records with.
 
         Returns:
             list[T]: The updated records.
@@ -203,19 +203,19 @@ class Repository(Generic[T, U], ABC):
         Upsert a record in the table.
 
         Args:
-            data (T): The data to upsert the record with.
+            data (T): Instance of the model to upsert.
 
         Returns:
             T: The upserted record.
         """
 
     @abstractmethod
-    async def upsert_many(self, data: Sequence[T]) -> list[T]:
+    async def upsert_many(self, data: list[T]) -> list[T]:
         """
         Upsert many records in the table.
 
         Args:
-            data (Sequence[T]): The data to upsert the records with.
+            data (list[T]): List of instances of the model to upsert.
 
         Returns:
             list[T]: The upserted records.
