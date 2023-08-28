@@ -337,6 +337,7 @@ class SQLAlchemyRepository(
             await self._expunge(instance, auto_expunge=auto_expunge)
             return instance
 
+    # TODO: many at once
     async def update_many(
         self,
         data: list[T],
@@ -344,7 +345,24 @@ class SQLAlchemyRepository(
         with_for_update: bool | None = None,
         **kwargs,
     ) -> list[T]:
-        return data  # TODO:
+        auto_commit = kwargs.pop("auto_commit", self.auto_commit)
+        auto_expunge = kwargs.pop("auto_expunge", self.auto_expunge)
+        auto_refresh = kwargs.pop("auto_refresh", self.auto_refresh)
+
+        instances: list[T] = []
+        async with sql_error_handler():
+            for d in data:
+                instance = await self._attach_to_session(d, strategy="merge")
+                await self._flush_or_commit(auto_commit=auto_commit)
+                await self._refresh(
+                    instance,
+                    attribute_names=attribute_names,
+                    with_for_update=with_for_update,
+                    auto_refresh=auto_refresh,
+                )
+                await self._expunge(instance, auto_expunge=auto_expunge)
+                instances.append(instance)
+            return instances
 
     async def upsert(
         self,
