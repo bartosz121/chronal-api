@@ -232,11 +232,34 @@ async def test_list_and_count(db_session: AsyncSession, repo: TodoItemRepository
 
 
 async def test_update(db_session: AsyncSession, repo: TodoItemRepository):
-    assert True
+    item = TodoItem(title="Test update", description="test update desc", is_complete=False)
+    db_session.add(item)
+    await db_session.commit()
+
+    item.title = "Test update updated"
+    await repo.update(item)
+
+    item_from_db = (await db_session.execute(select(TodoItem).where(TodoItem.id == item.id))).scalar_one_or_none()
+    assert item_from_db is not None
+    assert item_from_db.title == "Test update updated"
 
 
 async def test_update_many(db_session: AsyncSession, repo: TodoItemRepository):
-    assert True
+    items = [TodoItem(title=f"Test update {i}", description="test update desc", is_complete=False) for i in range(10)]
+    db_session.add_all(items)
+    await db_session.commit()
+
+    for i, item in enumerate(items):
+        item.title = f"Test update updated {i}"
+
+    await repo.update_many(items)
+
+    items_from_db = (
+        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test update updated%")))).scalars().all()
+    )
+
+    assert len(items_from_db) == len(items)
+    assert all((item.title in [i.title for i in items_from_db] for item in items))
 
 
 async def test_upsert_create(db_session: AsyncSession, repo: TodoItemRepository):
