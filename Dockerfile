@@ -1,4 +1,4 @@
-FROM python:3.10.11-slim-buster
+FROM python:3.11.5-slim-bookworm as builder
 
 ARG CHRONAL_ENVIRONMENT
 
@@ -10,7 +10,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     # poetry
     POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR='/tmp/pypoetry' \
     POETRY_HOME='/opt/poetry' \
     # chronal-api
@@ -39,6 +40,28 @@ RUN echo "CHRONAL_ENVIRONMENT: ${CHRONAL_ENVIRONMENT}" \
 
 COPY . ./
 
-RUN poetry install
+RUN poetry install --only-root --no-interaction --no-ansi \
+    && rm -rf "$POETRY_CACHE_DIR"
 
-CMD ["poetry" , "run", "poe", "serve"]
+
+FROM python:3.11.5-slim-bookworm as runtime
+
+RUN apt update \
+    && apt install --no-install-recommends -y \
+    curl \
+    # Clean up
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV VIRUTAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+COPY --from=builder ${VIRUTAL_ENV} ${VIRUTAL_ENV}
+
+COPY --from=builder /app /app
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 CMD [ "poe", "healthcheck" ]
+
+CMD ["poe", "serve"]
