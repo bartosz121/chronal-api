@@ -1,11 +1,5 @@
-from sqlalchemy.ext.asyncio import (
-    AsyncAttrs,
-)
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    mapped_column,
-)
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(
@@ -29,4 +23,4 @@ class TodoItem(Base):
     def __repr__(
         self,
     ) -> str:
-        return f"<TodoItem(id={self.id}, title={self.title}, description={self.description}, is_complete={self.is_complete})>"
+        return f"<TodoItem(id={self.id}, title={self.title}, description={self.description}, is_complete={self.is_complete})>"  # noqa: E501

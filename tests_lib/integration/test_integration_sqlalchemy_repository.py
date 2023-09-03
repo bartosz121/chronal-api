@@ -6,7 +6,7 @@ from chronal_api.lib.repository import exceptions as repo_exceptions
 from chronal_api.lib.repository.sqlalchemy import SQLAlchemyRepository
 
 from ..conftest import DUMMY_COUNT
-from ..model import TodoItem
+from ..models import TodoItem
 
 
 class TodoItemRepository(SQLAlchemyRepository[TodoItem, int]):

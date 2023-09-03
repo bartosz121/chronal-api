@@ -5,7 +5,7 @@ import pysqlite3
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from .model import Base, TodoItem
+from .models import Base, TodoItem
 
 DUMMY_COUNT = 1000
 
