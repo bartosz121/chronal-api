@@ -1,0 +1,37 @@
+name: Lint and test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: "*"
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # - name: Update sqlite3
+      #   run: |
+      #     wget https://www.sqlite.org/2023/sqlite-autoconf-3430000.tar.gz
+      #     tar xvfz sqlite-autoconf-3430000.tar.gz
+      #     cd sqlite-autoconf-3430000
+      #     ./configure --prefix=/tmp/sqlite3
+      #     make
+      #     make install
+      #     sudo cp -r /tmp/sqlite3/lib /usr/local/lib
+      #     sudo cp -r /tmp/sqlite3/include /usr/local/include
+      #     sudo ldconfig
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.6.1
+      - name: Install dependencies
+        run: poetry install
+      - name: Lint
+        run: poetry run poe lint
+      - name: Test
+        run: poetry run poe test

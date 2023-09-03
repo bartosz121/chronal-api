@@ -1,96 +1,137 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "chronal-api"
-dynamic = ["version"]
-description = ''
+version = "0.1.0"
+description = ""
+authors = ["bartosz121 <bmagiera121@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.11"
-license = "MIT"
-keywords = []
-authors = [{ name = "bartosz121", email = "bmagiera121@gmail.com" }]
-dependencies = []
+packages = [{ include = "chronal_api" }]
 
-[project.urls]
-Documentation = "https://github.com/bartosz1221/chronal-api#readme"
-Issues = "https://github.com/bartosz121/chronal-api/issues"
-Source = "https://github.com/bartosz121/chronal-api"
 
-[tool.hatch.version]
-path = "chronal_api/__about__.py"
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.0"
+pydantic-settings = "^2.0.3"
+uvicorn = { extras = ["all"], version = "^0.23.2" }
+httptools = "^0.6.0"
+uvloop = "^0.17.0"
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.20" }
+asyncpg = "^0.28.0"
+alembic = "^1.11.3"
+httpx = "^0.24.1"
+poethepoet = "^0.22.0"
+aiosqlite = "^0.19.0"
+pysqlite3 = "^0.5.1"
 
-[tool.hatch.envs.default]
-dependencies = [
-    "fastapi>=0.100.1",
-    "pip-tools>=7.1.0",
-    "pydantic-settings>=2.0.2",
-    "uvicorn>=0.23.2",
-    "coverage[toml]>=6.5",
-    "pytest",
-    "colorama>=0.4;sys_platform == 'win32'",
-    "httptools>=0.5.0",
-    "python-dotenv>=0.13",
-    "uvloop>=0.14.0,!=0.15.0,!=0.15.1; sys_platform != 'win32' and (sys_platform != 'cygwin' and platform_python_implementation != 'PyPy')",
-    "watchfiles>=0.13",
-    "websockets>=10.4",
-]
-[tool.hatch.envs.default.scripts]
-requirements = "hatch dep show requirements --all | pip-compile --generate-hashes --annotate --resolver=backtracking -U -o requirements.txt -"
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
-cov-report = ["- coverage combine", "coverage report"]
-cov = ["test-cov", "cov-report"]
-chronal = "hatch run python chronal_api/main.py"
 
-[[tool.hatch.envs.all.matrix]]
-python = ["3.11"]
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.5.1"
+ruff = "^0.0.286"
+black = "^23.7.0"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.21.1"
+coverage = { extras = ["toml"], version = "^7.3.0" }
 
-[tool.hatch.envs.dev]
-template = "default"
-extra-dependencies = [
-    "black>=23.1.0",
-    "mypy>=1.0.0",
-    "ruff>=0.0.243",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "coverage>=7.2.7",
-]
-
-[tool.hatch.envs.dev.scripts]
-check = [
-    "ruff {args:.}",
-    "black --check --diff {args:.}",
-    "mypy --install-types --non-interactive {args:chronal_api tests}",
-]
-lint = ["black {args:.}", "ruff --fix {args:.}", "check"]
-all = ["check", "lint"]
-
-[tool.black]
-target-version = ["py311"]
-line-length = 120
 
 [tool.ruff]
 target-version = "py311"
-line-length = 120
+line-length = 119
 unfixable = [
-    # Don't touch unused imports
-    "F401",
+    "F401", # Don't touch unused imports
+    "F841", # Don't touch unused variables
 ]
+
+
+[tool.black]
+target-version = ["py311"]
+line-length = 119
+
+
+[tool.poe.executor]
+type = "virtualenv"
+location = ".venv"
+
+
+[tool.poe.tasks.test-chronal-api]
+help = "Run tests chronal-api"
+cmd = "pytest -vv tests"
+
+
+[tool.poe.tasks.test-lib]
+help = "Run tests lib"
+cmd = "pytest -vv tests_lib"
+
+
+[tool.poe.tasks.test]
+help = "Run tests"
+
+
+[[tool.poe.tasks.test.sequence]]
+ref = "test-chronal-api"
+
+
+[[tool.poe.tasks.test.sequence]]
+ref = "test-lib"
+
+
+[tool.poe.tasks.serve]
+help = "Run uvicorn server"
+cmd = "python chronal_api/main.py"
+use_exec = true
+
+
+[tool.poe.tasks.healthcheck]
+help = "Run healthcheck"
+shell = "curl --silent --fail http://localhost:$(python -c 'from chronal_api.settings import UvicornSettings;print(UvicornSettings().port)')/healthcheck"
+
+# [tool.poe.tasks.mypy]
+# help = "Run mypy"
+# cmd = "mypy --install-types --non-interactive chronal_api"
+
+
+[tool.poe.tasks.lint]
+help = "Run lint check"
+
+
+[[tool.poe.tasks.lint.sequence]]
+help = "Run black check ."
+cmd = "black --check --diff ."
+
+
+[[tool.poe.tasks.lint.sequence]]
+help = "Run ruff check"
+cmd = "ruff check ."
+
+
+[tool.poe.tasks.format]
+help = "Run formatters"
+
+
+[[tool.poe.tasks.format.sequence]]
+help = "Run black"
+cmd = "black ."
+
+[[tool.poe.tasks.format.sequence]]
+help = "Run ruff"
+cmd = "ruff --fix ."
+
 
 [tool.ruff.isort]
 known-first-party = ["chronal_api"]
 
+
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
+
 
 [tool.ruff.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
 
 [tool.coverage.run]
 source_pkgs = ["chronal_api", "tests"]
@@ -98,9 +139,16 @@ branch = true
 parallel = true
 omit = ["chronal_api/__about__.py"]
 
+
 [tool.coverage.paths]
 chronal_api = ["chronal_api", "*/chronal-api/chronal_api"]
 tests = ["tests", "*/chronal-api/tests"]
 
+
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
