@@ -176,7 +176,9 @@ class SQLAlchemyRepository(
             instances: list[T] = []
             for id in ids:
                 instances.extend(
-                    await self.session.scalars(delete(self.model).where(self.model_id_attr == id).returning(self.model))
+                    await self.session.scalars(
+                        delete(self.model).where(self.model_id_attr == id).returning(self.model)
+                    )
                 )
             await self._flush_or_commit(auto_commit=auto_commit)
             for instance in instances:
@@ -236,7 +238,9 @@ class SQLAlchemyRepository(
         auto_expunge = kwargs.pop("auto_expunge", self.auto_expunge)
 
         async with sql_error_handler():
-            instance = (await self.session.execute(self.statement.where(self.model_id_attr == id))).scalar_one_or_none()
+            instance = (
+                await self.session.execute(self.statement.where(self.model_id_attr == id))
+            ).scalar_one_or_none()
             instance = await self.check_not_found(instance)
             await self._expunge(
                 instance,
@@ -257,7 +261,9 @@ class SQLAlchemyRepository(
         auto_expunge = kwargs.pop("auto_expunge", self.auto_expunge)
 
         async with sql_error_handler():
-            instance = (await self.session.execute(self.statement.where(self.model_id_attr == id))).scalar_one_or_none()
+            instance = (
+                await self.session.execute(self.statement.where(self.model_id_attr == id))
+            ).scalar_one_or_none()
             if instance:
                 await self._expunge(
                     instance,

@@ -44,7 +44,7 @@ unfixable = [
 
 [tool.black]
 target-version = ["py311"]
-line-length = 199
+line-length = 119
 
 
 [tool.poe.executor]
@@ -89,32 +89,31 @@ shell = "curl --silent --fail http://localhost:$(python -c 'from chronal_api.set
 # cmd = "mypy --install-types --non-interactive chronal_api"
 
 
-[tool.poe.tasks.lint-check]
+[tool.poe.tasks.lint]
 help = "Run lint check"
 
 
-[[tool.poe.tasks.lint-check.sequence]]
+[[tool.poe.tasks.lint.sequence]]
 help = "Run black check ."
 cmd = "black --check --diff ."
 
 
-[[tool.poe.tasks.lint-check.sequence]]
+[[tool.poe.tasks.lint.sequence]]
 help = "Run ruff check"
 cmd = "ruff check ."
 
 
-[tool.poe.tasks.lint]
-help = "Run lint"
+[tool.poe.tasks.format]
+help = "Run formatters"
 
 
-[[tool.poe.tasks.lint.sequence]]
-help = "Run ruff"
-cmd = "ruff --fix ."
-
-
-[[tool.poe.tasks.lint.sequence]]
+[[tool.poe.tasks.format.sequence]]
 help = "Run black"
 cmd = "black ."
+
+[[tool.poe.tasks.format.sequence]]
+help = "Run ruff"
+cmd = "ruff --fix ."
 
 
 [tool.ruff.isort]

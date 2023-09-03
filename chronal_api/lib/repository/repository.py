@@ -147,7 +147,9 @@ class Repository(Generic[T, U], ABC):
         """
 
     @abstractmethod
-    async def list_(self, **kwargs: Any) -> list[T]:  # FIXME: pylance shows error without '_' because it shadows `list`
+    async def list_(
+        self, **kwargs: Any
+    ) -> list[T]:  # FIXME: pylance shows error without '_' because it shadows `list`
         """
         List records from the table.
 
