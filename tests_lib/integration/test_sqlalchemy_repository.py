@@ -27,7 +27,7 @@ async def test_count_kwargs(db_session: AsyncSession, repo: TodoItemRepository):
     item = TodoItem(
         title="Test count kwargs",
         description="test count kwargs desc",
-        is_complete=False,
+        is_completed=False,
     )
     db_session.add(item)
     await db_session.commit()
@@ -35,7 +35,7 @@ async def test_count_kwargs(db_session: AsyncSession, repo: TodoItemRepository):
     repo_count = await repo.count(
         title=item.title,
         description=item.description,
-        is_complete=item.is_complete,
+        is_completed=item.is_completed,
     )
     assert repo_count == 1
 
@@ -44,7 +44,7 @@ async def test_create(db_session: AsyncSession, repo: TodoItemRepository):
     item = TodoItem(
         title="Test create",
         description="test create desc",
-        is_complete=False,
+        is_completed=False,
     )
     created = await repo.create(item)
     assert created == item
@@ -62,7 +62,7 @@ async def test_create_many(db_session: AsyncSession, repo: TodoItemRepository):
         TodoItem(
             title=f"Test create_many {i}",
             description=f"test create_many {i}",
-            is_complete=False,
+            is_completed=False,
         )
         for i in range(10)
     ]
@@ -83,7 +83,7 @@ async def test_delete(db_session: AsyncSession, repo: TodoItemRepository):
     item = TodoItem(
         title="Test delete",
         description="test delete desc",
-        is_complete=False,
+        is_completed=False,
     )
     db_session.add(item)
     await db_session.commit()
@@ -101,7 +101,7 @@ async def test_delete_many(db_session: AsyncSession, repo: TodoItemRepository):
         TodoItem(
             title=f"Test delete_many {i}",
             description=f"test delete_many {i}",
-            is_complete=False,
+            is_completed=False,
         )
         for i in range(10)
     ]
@@ -123,7 +123,7 @@ async def test_exists(db_session: AsyncSession, repo: TodoItemRepository):
     item = TodoItem(
         title="Test exists",
         description="test exists desc",
-        is_complete=False,
+        is_completed=False,
     )
     db_session.add(item)
     await db_session.commit()
@@ -143,7 +143,7 @@ async def test_get(db_session: AsyncSession, repo: TodoItemRepository):
     item = TodoItem(
         title="Test get",
         description="test get desc",
-        is_complete=False,
+        is_completed=False,
     )
     db_session.add(item)
     await db_session.commit()
@@ -169,7 +169,7 @@ async def test_get_one(db_session: AsyncSession, repo: TodoItemRepository):
     item = TodoItem(
         title="Test get_one",
         description="test get_one desc",
-        is_complete=False,
+        is_completed=False,
     )
     db_session.add(item)
     await db_session.commit()
@@ -182,7 +182,7 @@ async def test_get_one_or_none(db_session: AsyncSession, repo: TodoItemRepositor
     item = TodoItem(
         title="Test get_one_or_none",
         description="test get_one_or_none desc",
-        is_complete=False,
+        is_completed=False,
     )
     db_session.add(item)
     await db_session.commit()
@@ -199,7 +199,7 @@ async def test_list_(db_session: AsyncSession, repo: TodoItemRepository):
         TodoItem(
             title=f"Test list {i}",
             description="test list",
-            is_complete=False,
+            is_completed=False,
         )
         for i in range(100)
     ]
@@ -217,7 +217,7 @@ async def test_list_and_count(db_session: AsyncSession, repo: TodoItemRepository
         TodoItem(
             title=f"Test list {i}",
             description="test list",
-            is_complete=False,
+            is_completed=False,
         )
         for i in range(100)
     ]
@@ -232,7 +232,7 @@ async def test_list_and_count(db_session: AsyncSession, repo: TodoItemRepository
 
 
 async def test_update(db_session: AsyncSession, repo: TodoItemRepository):
-    item = TodoItem(title="Test update", description="test update desc", is_complete=False)
+    item = TodoItem(title="Test update", description="test update desc", is_completed=False)
     db_session.add(item)
     await db_session.commit()
 
@@ -245,7 +245,7 @@ async def test_update(db_session: AsyncSession, repo: TodoItemRepository):
 
 
 async def test_update_many(db_session: AsyncSession, repo: TodoItemRepository):
-    items = [TodoItem(title=f"Test update {i}", description="test update desc", is_complete=False) for i in range(10)]
+    items = [TodoItem(title=f"Test update {i}", description="test update desc", is_completed=False) for i in range(10)]
     db_session.add_all(items)
     await db_session.commit()
 
@@ -263,7 +263,7 @@ async def test_update_many(db_session: AsyncSession, repo: TodoItemRepository):
 
 
 async def test_upsert_create(db_session: AsyncSession, repo: TodoItemRepository):
-    item = TodoItem(title="Test upsert", description="test upsert desc", is_complete=False)
+    item = TodoItem(title="Test upsert", description="test upsert desc", is_completed=False)
     upserted = await repo.upsert(item)
 
     assert upserted.id
@@ -274,7 +274,7 @@ async def test_upsert_create(db_session: AsyncSession, repo: TodoItemRepository)
 
 
 async def test_upsert_update(db_session: AsyncSession, repo: TodoItemRepository):
-    item = TodoItem(title="Test upsert", description="test upsert desc", is_complete=False)
+    item = TodoItem(title="Test upsert", description="test upsert desc", is_completed=False)
     db_session.add(item)
     await db_session.commit()
 
@@ -291,7 +291,7 @@ async def test_upsert_update(db_session: AsyncSession, repo: TodoItemRepository)
 
 
 async def test_upsert_many_create(db_session: AsyncSession, repo: TodoItemRepository):
-    items = [TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_complete=False) for i in range(10)]
+    items = [TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_completed=False) for i in range(10)]
 
     upserted = await repo.upsert_many(items)
     assert len(upserted) == len(items)
@@ -304,7 +304,7 @@ async def test_upsert_many_create(db_session: AsyncSession, repo: TodoItemReposi
 
 
 async def test_upsert_many_update(db_session: AsyncSession, repo: TodoItemRepository):
-    items = [TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_complete=False) for i in range(10)]
+    items = [TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_completed=False) for i in range(10)]
     db_session.add_all(items)
     await db_session.commit()
 
