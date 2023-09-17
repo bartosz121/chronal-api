@@ -55,7 +55,7 @@ type = "virtualenv"
 location = ".venv"
 
 
-[tool.poe.tasks.test-chronal-api]
+[tool.poe.tasks.test-api]
 help = "Run tests chronal-api"
 cmd = "pytest -vv tests"
 
@@ -70,7 +70,7 @@ help = "Run tests"
 
 
 [[tool.poe.tasks.test.sequence]]
-ref = "test-chronal-api"
+ref = "test-api"
 
 
 [[tool.poe.tasks.test.sequence]]
