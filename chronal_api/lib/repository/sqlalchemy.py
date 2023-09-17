@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Any, Iterable, Literal, TypeVar
 
-from sqlalchemy import Select, delete, select
+from sqlalchemy import Select, delete
 from sqlalchemy import func as sqla_func
+from sqlalchemy import select
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,12 +16,7 @@ U = TypeVar("U")
 SelectT = TypeVar("SelectT", bound=Select[Any])
 
 
-class SQLAlchemyRepository(
-    Repository[
-        T,
-        U,
-    ]
-):
+class SQLAlchemyRepository(Repository[T, U]):
     def __init__(
         self,
         session: "AsyncSession",
@@ -79,17 +75,8 @@ class SQLAlchemyRepository(
     # Statement methods
 
     async def _where_from_kwargs(self, statement: SelectT, **kwargs: Any) -> SelectT:
-        for (
-            k,
-            v,
-        ) in kwargs.items():
-            statement = statement.where(
-                getattr(
-                    self.model,
-                    k,
-                )
-                == v
-            )
+        for k, v in kwargs.items():
+            statement = statement.where(getattr(self.model, k) == v)
         return statement
 
     # Repository methods
@@ -108,10 +95,7 @@ class SQLAlchemyRepository(
         statement = statement.with_only_columns(sqla_func.count()).select_from(self.model)
 
         async with sql_error_handler():
-            statement = await self._where_from_kwargs(
-                statement,
-                **kwargs,
-            )
+            statement = await self._where_from_kwargs(statement, **kwargs)
 
             result = await self.session.execute(statement)
             return result.scalar_one()
@@ -124,14 +108,8 @@ class SQLAlchemyRepository(
         async with sql_error_handler():
             instance = await self._attach_to_session(data)
             await self._flush_or_commit(auto_commit=auto_commit)
-            await self._refresh(
-                instance,
-                auto_refresh=auto_refresh,
-            )
-            await self._expunge(
-                instance,
-                auto_expunge=auto_expunge,
-            )
+            await self._refresh(instance, auto_refresh=auto_refresh)
+            await self._expunge(instance, auto_expunge=auto_expunge)
             return instance
 
     async def create_many(self, data: list[T], **kwargs: Any) -> list[T]:
@@ -142,10 +120,7 @@ class SQLAlchemyRepository(
             self.session.add_all(data)
             await self._flush_or_commit(auto_commit=auto_commit)
             for d in data:
-                await self._expunge(
-                    d,
-                    auto_expunge=auto_expunge,
-                )
+                await self._expunge(d, auto_expunge=auto_expunge)
         return data
 
     async def delete(
@@ -159,10 +134,7 @@ class SQLAlchemyRepository(
             instance = await self.get(id)
             await self.session.delete(instance)
             await self._flush_or_commit(auto_commit=auto_commit)
-            await self._expunge(
-                instance,
-                auto_expunge=auto_expunge,
-            )
+            await self._expunge(instance, auto_expunge=auto_expunge)
             return instance
 
     async def delete_many(
@@ -218,10 +190,7 @@ class SQLAlchemyRepository(
         async with sql_error_handler():
             instance = (await self.session.execute(statement)).scalar_one_or_none()
             instance = await self.check_not_found(instance)
-            await self._expunge(
-                instance,
-                auto_expunge=auto_expunge,
-            )
+            await self._expunge(instance, auto_expunge=auto_expunge)
 
             return instance
 
@@ -242,10 +211,7 @@ class SQLAlchemyRepository(
                 await self.session.execute(self.statement.where(self.model_id_attr == id))
             ).scalar_one_or_none()
             instance = await self.check_not_found(instance)
-            await self._expunge(
-                instance,
-                auto_expunge=auto_expunge,
-            )
+            await self._expunge(instance, auto_expunge=auto_expunge)
             return instance
 
     async def get_one_or_none(self, id: U, **kwargs: Any) -> T | None:
@@ -265,10 +231,7 @@ class SQLAlchemyRepository(
                 await self.session.execute(self.statement.where(self.model_id_attr == id))
             ).scalar_one_or_none()
             if instance:
-                await self._expunge(
-                    instance,
-                    auto_expunge=auto_expunge,
-                )
+                await self._expunge(instance, auto_expunge=auto_expunge)
             return instance
 
     async def list_(self, **kwargs: Any) -> list[T]:
@@ -323,7 +286,7 @@ class SQLAlchemyRepository(
         data: T,
         attribute_names: Iterable[str] | None = None,
         with_for_update: bool | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> T:
         auto_commit = kwargs.pop("auto_commit", self.auto_commit)
         auto_expunge = kwargs.pop("auto_expunge", self.auto_expunge)
@@ -349,7 +312,7 @@ class SQLAlchemyRepository(
         data: list[T],
         attribute_names: Iterable[str] | None = None,
         with_for_update: bool | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> list[T]:
         auto_commit = kwargs.pop("auto_commit", self.auto_commit)
         auto_expunge = kwargs.pop("auto_expunge", self.auto_expunge)
@@ -375,7 +338,7 @@ class SQLAlchemyRepository(
         data: T,
         attribute_names: Iterable[str] | None = None,
         with_for_update: bool | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> T:
         """
         Update or insert a record in the table.
