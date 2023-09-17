@@ -30,7 +30,7 @@ class Repository(Generic[T, U], ABC):
         return item
 
     @abstractmethod
-    async def count(self) -> int:
+    async def count(self, **kwargs: Any) -> int:
         """
         Count the number of records in the table.
 
