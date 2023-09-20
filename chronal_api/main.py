@@ -23,6 +23,11 @@ async def index() -> dict[str, str]:
     return {"msg": "ok"}
 
 
+@app.get("/healthcheck")
+async def healthcheck() -> dict[str, str]:
+    return {"msg": "ok"}
+
+
 def run():
     import uvicorn
 
