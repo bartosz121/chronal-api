@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from chronal_api.settings import CORSSettings, UvicornSettings, get_app_settings
+from chronal_api.users.router import router as users_router
 
 app_settings = get_app_settings()
 
@@ -14,6 +15,7 @@ app = FastAPI(
 )
 
 app.add_middleware(CORSMiddleware, **CORSSettings().model_dump())
+app.include_router(users_router, prefix="/users")
 
 
 @app.get("/")
