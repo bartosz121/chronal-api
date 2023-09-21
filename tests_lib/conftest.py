@@ -3,7 +3,12 @@ from typing import AsyncIterator
 
 import pysqlite3
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_scoped_session,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from .models import Base, TodoItem
 
@@ -22,7 +27,8 @@ async def insert_dummy(
     from random import randint
 
     items = [
-        TodoItem(title=f"Item {i}", description=f"{i}", is_completed=bool(randint(0, 1))) for i in range(DUMMY_COUNT)
+        TodoItem(title=f"Item {i}", description=f"{i}", is_completed=bool(randint(0, 1)))
+        for i in range(DUMMY_COUNT)
     ]
     session.add_all(items)
     await session.commit()
