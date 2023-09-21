@@ -61,7 +61,9 @@ class SQLAlchemyRepository(Repository[T, U]):
         with_for_update: bool | None = None,
     ) -> None:
         if auto_refresh:
-            await self.session.refresh(instance, attribute_names=attribute_names, with_for_update=with_for_update)
+            await self.session.refresh(
+                instance, attribute_names=attribute_names, with_for_update=with_for_update
+            )
 
     async def _expunge(self, instance: T, auto_expunge: bool | None = None) -> None:
         if auto_expunge is None:
@@ -185,7 +187,9 @@ class SQLAlchemyRepository(Repository[T, U]):
             T: The record.
         """
         statement = kwargs.pop("statement", self.statement)
-        statement = await self._where_from_kwargs(statement, **kwargs, **{self.model_id_attr_name: id})
+        statement = await self._where_from_kwargs(
+            statement, **kwargs, **{self.model_id_attr_name: id}
+        )
 
         async with sql_error_handler():
             instance = (await self.session.execute(statement)).scalar_one_or_none()
@@ -345,7 +349,8 @@ class SQLAlchemyRepository(Repository[T, U]):
 
         Args:
             data (T): The data to update or insert the record with.
-            attribute_names (Iterable[str] | None): The attribute names to update or insert the record with.
+            attribute_names (Iterable[str] | None): The attribute names to update
+            or insert the record with.
             with_for_update (bool | None): Whether or not to use FOR UPDATE.
             **kwargs (Any): The kwargs to filter by.
 

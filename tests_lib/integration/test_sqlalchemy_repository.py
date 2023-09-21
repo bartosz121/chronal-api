@@ -72,7 +72,13 @@ async def test_create_many(db_session: AsyncSession, repo: TodoItemRepository):
     assert all((item.id for item in created))
 
     items_from_db = (
-        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test create_many%")))).scalars().all()
+        (
+            await db_session.execute(
+                select(TodoItem).where(TodoItem.title.like("Test create_many%"))
+            )
+        )
+        .scalars()
+        .all()
     )
 
     assert len(items_from_db) == len(items)
@@ -91,11 +97,14 @@ async def test_delete(db_session: AsyncSession, repo: TodoItemRepository):
     deleted = await repo.delete(item.id)
     assert deleted == item
 
-    should_be_none = (await db_session.execute(select(TodoItem).where(TodoItem.id == item.id))).scalar_one_or_none()
+    should_be_none = (
+        await db_session.execute(select(TodoItem).where(TodoItem.id == item.id))
+    ).scalar_one_or_none()
     assert should_be_none is None
 
 
-# Check your sqlite version if this fails, delete_many uses `RETURNING` which is supported in 3.35.0+
+# Check your sqlite version if this fails, delete_many uses
+# `RETURNING` which is supported in 3.35.0+
 async def test_delete_many(db_session: AsyncSession, repo: TodoItemRepository):
     items = [
         TodoItem(
@@ -114,7 +123,13 @@ async def test_delete_many(db_session: AsyncSession, repo: TodoItemRepository):
     assert all((item.title in [i.title for i in deleted] for item in items))
 
     items_from_db = (
-        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test delete_many%")))).scalars().all()
+        (
+            await db_session.execute(
+                select(TodoItem).where(TodoItem.title.like("Test delete_many%"))
+            )
+        )
+        .scalars()
+        .all()
     )
     assert items_from_db == []
 
@@ -239,13 +254,18 @@ async def test_update(db_session: AsyncSession, repo: TodoItemRepository):
     item.title = "Test update updated"
     await repo.update(item)
 
-    item_from_db = (await db_session.execute(select(TodoItem).where(TodoItem.id == item.id))).scalar_one_or_none()
+    item_from_db = (
+        await db_session.execute(select(TodoItem).where(TodoItem.id == item.id))
+    ).scalar_one_or_none()
     assert item_from_db is not None
     assert item_from_db.title == "Test update updated"
 
 
 async def test_update_many(db_session: AsyncSession, repo: TodoItemRepository):
-    items = [TodoItem(title=f"Test update {i}", description="test update desc", is_completed=False) for i in range(10)]
+    items = [
+        TodoItem(title=f"Test update {i}", description="test update desc", is_completed=False)
+        for i in range(10)
+    ]
     db_session.add_all(items)
     await db_session.commit()
 
@@ -255,7 +275,13 @@ async def test_update_many(db_session: AsyncSession, repo: TodoItemRepository):
     await repo.update_many(items)
 
     items_from_db = (
-        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test update updated%")))).scalars().all()
+        (
+            await db_session.execute(
+                select(TodoItem).where(TodoItem.title.like("Test update updated%"))
+            )
+        )
+        .scalars()
+        .all()
     )
 
     assert len(items_from_db) == len(items)
@@ -268,7 +294,9 @@ async def test_upsert_create(db_session: AsyncSession, repo: TodoItemRepository)
 
     assert upserted.id
 
-    item_from_db = (await db_session.execute(select(TodoItem).where(TodoItem.id == upserted.id))).scalar_one_or_none()
+    item_from_db = (
+        await db_session.execute(select(TodoItem).where(TodoItem.id == upserted.id))
+    ).scalar_one_or_none()
     assert item_from_db is not None
     assert item_from_db.id == upserted.id
 
@@ -285,26 +313,36 @@ async def test_upsert_update(db_session: AsyncSession, repo: TodoItemRepository)
     assert upserted == item
     assert upserted.title == "Test upsert updated"
 
-    item_from_db = (await db_session.execute(select(TodoItem).where(TodoItem.id == upserted.id))).scalar_one_or_none()
+    item_from_db = (
+        await db_session.execute(select(TodoItem).where(TodoItem.id == upserted.id))
+    ).scalar_one_or_none()
     assert item_from_db is not None
     assert item_from_db.title == "Test upsert updated"
 
 
 async def test_upsert_many_create(db_session: AsyncSession, repo: TodoItemRepository):
-    items = [TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_completed=False) for i in range(10)]
+    items = [
+        TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_completed=False)
+        for i in range(10)
+    ]
 
     upserted = await repo.upsert_many(items)
     assert len(upserted) == len(items)
     assert all((item.id for item in upserted))
 
     items_from_db = (
-        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test upsert%")))).scalars().all()
+        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test upsert%"))))
+        .scalars()
+        .all()
     )
     assert len(items_from_db) == len(items)
 
 
 async def test_upsert_many_update(db_session: AsyncSession, repo: TodoItemRepository):
-    items = [TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_completed=False) for i in range(10)]
+    items = [
+        TodoItem(title=f"Test upsert {i}", description="test upsert desc", is_completed=False)
+        for i in range(10)
+    ]
     db_session.add_all(items)
     await db_session.commit()
 
@@ -315,7 +353,9 @@ async def test_upsert_many_update(db_session: AsyncSession, repo: TodoItemReposi
     assert len(upserted) == len(items)
 
     items_from_db = (
-        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test upsert%")))).scalars().all()
+        (await db_session.execute(select(TodoItem).where(TodoItem.title.like("Test upsert%"))))
+        .scalars()
+        .all()
     )
     assert len(items_from_db) == len(items)
     assert all((item.title == "Test upsert updated" for item in items_from_db))
