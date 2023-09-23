@@ -17,7 +17,7 @@ class Repository(Generic[T, U], ABC):
     model_id_type: type[U]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+        pass
 
     @property
     def model_id_attr(self) -> Column[U]:
