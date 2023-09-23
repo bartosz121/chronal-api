@@ -78,6 +78,7 @@ class ChronalSettings(BaseSettings):
     ENVIRONMENT: Environment = Environment.LOCAL
     ROOT_PATH: str = "/"
     DEBUG: bool = True
+    TOKEN_DURATION: int = 604800  # 7 days
 
 
 @lru_cache(maxsize=1)
