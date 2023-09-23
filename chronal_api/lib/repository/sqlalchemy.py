@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any, Iterable, Literal, TypeVar
 
-from sqlalchemy import Select, delete
+from sqlalchemy import Select, delete, select
 from sqlalchemy import func as sqla_func
-from sqlalchemy import select
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +20,7 @@ class SQLAlchemyRepository(Repository[T, U]):
         self,
         session: "AsyncSession",
         *,
+        statement: Select[tuple[T]] | None = None,
         auto_expunge: bool = False,
         auto_refresh: bool = True,
         auto_commit: bool = False,
@@ -28,7 +28,7 @@ class SQLAlchemyRepository(Repository[T, U]):
     ) -> None:
         super().__init__(**kwargs)
         self.session = session
-        self.statement = select(self.model)
+        self.statement = statement if statement is not None else select(self.model)
         self.auto_expunge = auto_expunge
         self.auto_refresh = auto_refresh
         self.auto_commit = auto_commit
