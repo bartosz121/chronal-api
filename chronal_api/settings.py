@@ -45,13 +45,13 @@ class CORSSettings(BaseSettings):
 class DatabaseSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="DB_")
 
-    DB: str = "postgres"
+    DB: str = "sqlite"
     USER: str = "chronal"
     PASSWORD: str = "pa$$w0rd123!@#"
-    HOST: str = "127.0.0.1"
+    HOST: str = "//tmp/chronal.db"
     PORT: int = 5432
     NAME: str = "chronaldb"
-    DRIVER: str = "asyncpg"
+    DRIVER: str = "aiosqlite"
     ECHO: bool = False
 
     @property
@@ -60,13 +60,7 @@ class DatabaseSettings(BaseSettings):
             return "{}+{}://{}".format(self.DB, self.DRIVER, self.HOST)
         else:
             return "{}+{}://{}:{}@{}:{}/{}".format(
-                self.DB,
-                self.DRIVER,
-                self.USER,
-                self.PASSWORD,
-                self.HOST,
-                self.PORT,
-                self.NAME,
+                self.DB, self.DRIVER, self.USER, self.PASSWORD, self.HOST, self.PORT, self.NAME
             )
 
 
