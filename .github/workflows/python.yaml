@@ -7,6 +7,12 @@ on:
   pull_request:
     branches: ["master"]
 
+env:
+  APP_ENVIRONMENT: "TESTING"
+  DB_DB: "sqlite"
+  DB_DRIVER: "aiosqlite"
+  DB_HOST: //tmp/chronal.db
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
