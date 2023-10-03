@@ -1,37 +1,19 @@
 import asyncio
-from typing import AsyncIterator
+from typing import AsyncIterator, cast
 
 import pysqlite3
 import pytest
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_scoped_session,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
+from chronal_api.settings import DatabaseSettings, get_app_settings
+from tests.database import Session, init_test_database
 
 from .models import Base, TodoItem
 
 DUMMY_COUNT = 1000
 
-engine = create_async_engine("sqlite+aiosqlite:///:memory:", module=pysqlite3)
-
-async_session_factory = async_session = async_sessionmaker(engine, expire_on_commit=False)
-
-session_factory = async_scoped_session(async_session_factory, scopefunc=asyncio.current_task)
-
-
-async def insert_dummy(
-    session: AsyncSession,
-) -> None:
-    from random import randint
-
-    items = [
-        TodoItem(title=f"Item {i}", description=f"{i}", is_completed=bool(randint(0, 1)))
-        for i in range(DUMMY_COUNT)
-    ]
-    session.add_all(items)
-    await session.commit()
+db_settings = DatabaseSettings()
+app_settings = get_app_settings()
 
 
 @pytest.fixture(scope="session")
@@ -43,19 +25,39 @@ def event_loop():
     loop.close()
 
 
+@pytest.fixture(scope="function", autouse=True)
+async def db():
+    assert db_settings.NAME.endswith("test")
+
+    with init_test_database():
+        db_async_url = db_settings.get_url()
+        engine = create_async_engine(db_async_url.render_as_string(), module=pysqlite3)
+
+        async with engine.connect() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        Session.configure(bind=engine)
+
+        yield
+
+
 @pytest.fixture(scope="function")
-async def db_session() -> AsyncIterator[AsyncSession]:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    async with session_factory() as session:
-        async with session.begin():
-            await insert_dummy(session_factory())
-
-    session = session_factory()
-    await session.begin()
-
+async def session() -> AsyncIterator[AsyncSession]:
+    session = cast(AsyncSession, Session())
+    session.begin_nested()
     yield session
+    await session.rollback()
 
-    await session.close()
-    await engine.dispose()
+
+@pytest.fixture()
+async def insert_dummy(
+    session: AsyncSession,
+) -> None:
+    from random import randint
+
+    items = [
+        TodoItem(title=f"Item {i}", description=f"{i}", is_completed=bool(randint(0, 1)))
+        for i in range(DUMMY_COUNT)
+    ]
+    session.add_all(items)
+    await session.commit()
