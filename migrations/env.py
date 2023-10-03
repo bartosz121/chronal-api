@@ -35,7 +35,7 @@ target_metadata = metadata
 # ... etc.
 config.set_main_option(
     "sqlalchemy.url",
-    db_settings.url,
+    db_settings.get_url().render_as_string(),
 )
 
 

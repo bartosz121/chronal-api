@@ -20,6 +20,6 @@ class Base(AsyncAttrs, DeclarativeBase):
     metadata = metadata
 
 
-engine = create_async_engine(db_settings.url, echo=True)
+engine = create_async_engine(db_settings.get_url().render_as_string(), echo=True)
 
 sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
