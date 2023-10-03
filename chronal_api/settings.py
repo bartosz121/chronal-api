@@ -1,9 +1,13 @@
 from enum import Enum
 from functools import lru_cache
+from typing import TYPE_CHECKING, Any
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from chronal_api import __version__
+
+if TYPE_CHECKING:
+    from sqlalchemy.engine.url import URL
 
 
 class Environment(str, Enum):
@@ -51,17 +55,34 @@ class DatabaseSettings(BaseSettings):
     HOST: str = "//tmp/chronal.db"
     PORT: int = 5432
     NAME: str = "chronaldb"
-    DRIVER: str = "aiosqlite"
+    DRIVER: str = ""
+    ASYNC_DRIVER: str = "aiosqlite"
     ECHO: bool = False
 
-    @property
-    def url(self) -> str:
+    def get_url(self, *, async_=True, **kwargs: Any) -> "URL":
+        from sqlalchemy import engine
+
+        driver = self.ASYNC_DRIVER if async_ else self.DRIVER
+        drivername = self.DB if not driver else f"{self.DB}+{driver}"
+
         if self.DB == "sqlite":
-            return "{}+{}://{}".format(self.DB, self.DRIVER, self.HOST)
-        else:
-            return "{}+{}://{}:{}@{}:{}/{}".format(
-                self.DB, self.DRIVER, self.USER, self.PASSWORD, self.HOST, self.PORT, self.NAME
+            url = url = engine.URL.create(
+                drivername,
+                host=self.HOST,
+                **kwargs,
             )
+        else:
+            url = engine.URL.create(
+                drivername,
+                self.USER,
+                self.PASSWORD,
+                self.HOST,
+                self.PORT,
+                self.NAME,
+                **kwargs,
+            )
+
+        return url
 
 
 class ChronalSettings(BaseSettings):
