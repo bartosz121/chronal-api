@@ -25,7 +25,8 @@ arrow = "^1.2.3"
 pyhumps = "^3.8.0"
 passlib = "^1.7.4"
 argon2-cffi = "^23.1.0"
-pydantic = {extras = ["email"], version = "^2.3.0"}
+pydantic = { extras = ["email"], version = "^2.3.0" }
+sqlalchemy-utils = "^0.41.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -39,6 +40,8 @@ coverage = { extras = ["toml"], version = "^7.3.0" }
 faker = "^19.6.0"
 factory-boy = "^3.3.0"
 async-factory-boy = "^1.0.1"
+pytest-mock = "^3.11.1"
+pytest-env = "^1.0.1"
 
 
 [tool.ruff]
@@ -139,6 +142,12 @@ ban-relative-imports = "all"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+env = [
+    "CHRONAL_ENVIRONMENT=TESTING",
+    "CHRONAL_DEBUG=False",
+    "DB_HOST=//tmp/chronal_test.db",
+    "DB_NAME=chronal_test",
+]
 
 
 [tool.coverage.run]
