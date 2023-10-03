@@ -8,10 +8,11 @@ on:
     branches: ["master"]
 
 env:
-  APP_ENVIRONMENT: "TESTING"
+  CHRONAL_ENVIRONMENT: "TESTING"
   DB_DB: "sqlite"
-  DB_DRIVER: "aiosqlite"
-  DB_HOST: //tmp/chronal.db
+  DB_ASYNC_DRIVER: "aiosqlite"
+  DB_HOST: //tmp/chronal_test.db
+  DB_NAME: chronal_test
 
 jobs:
   lint-and-test:
