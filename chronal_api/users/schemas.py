@@ -26,5 +26,5 @@ class CreateToken(BaseModel):
 
 
 class AccessToken(BaseModel):
-    access_token: UUID4
+    access_token: str
     token_type: Literal["bearer"]
