@@ -6,7 +6,7 @@ from chronal_api.lib.auth import dependencies as auth_dependencies
 from chronal_api.lib.auth import exceptions as auth_exceptions
 from chronal_api.lib.router import APIRouter
 
-from . import dependencies, schemas, service
+from . import dependencies, exceptions, schemas
 
 router = APIRouter(
     tags=["users"],
@@ -19,7 +19,11 @@ router = APIRouter(
             409: {
                 "description": "Email address already in use",
                 "model": api_schemas.Message,
-                "content": {"application/json": {"example": {"msg": "Email already in use"}}},
+                "content": {
+                    "application/json": {
+                        "example": {"msg": exceptions.HTTPError.EMAIL_ALREADY_IN_USE}
+                    }
+                },
             },
         },
         "/token": {
@@ -28,7 +32,7 @@ router = APIRouter(
                 "description": "User with given email does not exist",
                 "model": api_schemas.Message,
                 "content": {
-                    "application/json": {"example": {"msg": "User with this email does not exist"}}
+                    "application/json": {"example": {"msg": exceptions.HTTPError.EMAIL_NOT_FOUND}}
                 },
             },
             400: {
@@ -38,7 +42,7 @@ router = APIRouter(
                     "application/json": {
                         "examples": {
                             "Wrong password": {
-                                "value": {"msg": "Wrong password"},
+                                "value": {"msg": exceptions.HTTPError.WRONG_PASSWORD},
                             }
                         }
                     }
@@ -50,22 +54,33 @@ router = APIRouter(
 )
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=schemas.UserRead)
+@router.post(
+    "/register",
+    name="users:register",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.UserRead,
+)
 async def register(
     user_create: schemas.UserCreate,
     user_service: dependencies.UserService,
 ):
     try:
         user = await user_service.create_user(user_create)
-    except service.EmailAlreadyExists:
+    except exceptions.EmailAlreadyExists:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail={"msg": "Email already in use"}
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"msg": exceptions.HTTPError.EMAIL_ALREADY_IN_USE},
         )
     else:
         return user
 
 
-@router.post("/token", status_code=status.HTTP_201_CREATED, response_model=schemas.AccessToken)
+@router.post(
+    "/token",
+    name="users:token",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.AccessToken,
+)
 async def create_token(
     data: schemas.CreateToken,
     user_service: dependencies.UserService,
@@ -73,24 +88,28 @@ async def create_token(
 ):
     try:
         user = await user_service.get_by_email(data.email)
-    except service.UserNotFound:
+        await auth_service.authenticate(user, data.password)
+    except exceptions.UserNotFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"msg": "User with this email does not exist"},
+            detail={"msg": exceptions.HTTPError.EMAIL_NOT_FOUND},
         )
-
-    try:
-        await auth_service.authenticate(user, data.password)
     except auth_exceptions.WrongPassword:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail={"msg": "Wrong password"}
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"msg": exceptions.HTTPError.WRONG_PASSWORD},
         )
+    else:
+        token = await auth_service.create_token(user)
+        return {"access_token": token.access_token, "token_type": "bearer"}
 
-    token = await auth_service.create_token(user)
-    return {"access_token": token.access_token, "token_type": "bearer"}
 
-
-@router.get("/logout", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+@router.get(
+    "/logout",
+    name="users:logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 async def logout(
     request: Request,
     user: auth_dependencies.OptionalCurrentUser,
