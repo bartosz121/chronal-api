@@ -159,3 +159,4 @@ cython_debug/
 #.idea/
 static/*
 *.db
+.ruff_cache
