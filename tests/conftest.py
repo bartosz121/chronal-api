@@ -6,6 +6,8 @@ import pysqlite3
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
+from chronal_api.calendars import repository as calendars_repository
+from chronal_api.calendars import service as calendars_service
 from chronal_api.lib.auth import models as auth_models
 from chronal_api.lib.database import dependencies as database_dependencies
 from chronal_api.lib.database.engine import Base, metadata  # noqa: F401
@@ -73,12 +75,28 @@ async def authorized_client(
     yield client, token
 
 
-# Factories
-@pytest.fixture()
+@pytest.fixture
 def user_factory() -> type[factories.UserFactory]:
     return factories.UserFactory
 
 
-@pytest.fixture()
+@pytest.fixture
 def access_token_factory() -> type[factories.AccessTokenFactory]:
     return factories.AccessTokenFactory
+
+
+@pytest.fixture
+def calendar_factory() -> type[factories.CalendarFactory]:
+    return factories.CalendarFactory
+
+
+@pytest.fixture
+def calendar_repository(session: AsyncSession) -> calendars_repository.CalendarRepository:
+    return calendars_repository.CalendarRepository(session)
+
+
+@pytest.fixture
+def calendar_service(
+    calendar_repository: calendars_repository.CalendarRepository,
+) -> calendars_service.CalendarService:
+    return calendars_service.CalendarService(calendar_repository)
