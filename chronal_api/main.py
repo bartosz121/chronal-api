@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from chronal_api.calendars.router import router as calendars_router
 from chronal_api.settings import CORSSettings, UvicornSettings, get_app_settings
 from chronal_api.users.router import router as users_router
 
@@ -16,6 +17,7 @@ app = FastAPI(
 
 app.add_middleware(CORSMiddleware, **CORSSettings().model_dump())
 app.include_router(users_router, prefix="/users")
+app.include_router(calendars_router, prefix="/calendars")
 
 
 @app.get("/")
