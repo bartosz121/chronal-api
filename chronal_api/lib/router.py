@@ -15,12 +15,12 @@ class APIRouter(APIRouter_):
 
     def add_api_route(
         self,
-        path: str,
         *args: Any,
+        name: str | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
         **kwargs: Any,
     ) -> None:
-        responses_ = responses or dict()
-        if self.api_routes_responses:
-            responses_.update(self.api_routes_responses.get(path, {}))
-        return super().add_api_route(path, *args, responses=responses_, **kwargs)
+        responses_new = responses or dict()
+        if self.api_routes_responses and name:
+            responses_new.update(self.api_routes_responses.get(name, {}))
+        return super().add_api_route(*args, name=name, responses=responses_new, **kwargs)
