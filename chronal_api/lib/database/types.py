@@ -28,7 +28,6 @@ class UUID(sqla_types.TypeDecorator):
         if not isinstance(value, uuid.UUID):
             if value is None:
                 return None
-            breakpoint()
             return str(uuid.UUID(value))
         return str(value)
 
