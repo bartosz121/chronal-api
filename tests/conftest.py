@@ -2,6 +2,7 @@ import asyncio
 from typing import AsyncIterator, cast
 
 import httpx
+import pysqlite3
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
@@ -32,7 +33,7 @@ async def db():
 
     with init_test_database():
         db_async_url = db_settings.get_url()
-        engine = create_async_engine(db_async_url.render_as_string())
+        engine = create_async_engine(db_async_url.render_as_string(), module=pysqlite3)
 
         async with engine.connect() as conn:
             await conn.run_sync(Base.metadata.create_all)
