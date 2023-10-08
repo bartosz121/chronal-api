@@ -2,6 +2,7 @@ import uuid
 from typing import TYPE_CHECKING
 
 from faker import Faker
+from fastapi import status
 from sqlalchemy import select
 
 from chronal_api.lib.auth import models as auth_models
@@ -23,7 +24,7 @@ async def test_register(client: "httpx.AsyncClient"):
     )
 
     response = await client.post("/users/register", json=data.model_dump())
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
 
     response_json = response.json()
     assert response_json["id"]
@@ -41,7 +42,7 @@ async def test_register_409_email_already_exists(
     )
 
     response = await client.post("/users/register", json=data.model_dump())
-    assert response.status_code == 409
+    assert response.status_code == status.HTTP_409_CONFLICT
 
     response_json = response.json()
     assert response_json["detail"]["msg"] == users_exceptions.HTTPError.EMAIL_ALREADY_IN_USE
@@ -55,16 +56,14 @@ async def test_token(client: "httpx.AsyncClient", user_factory: factories.UserFa
     )
 
     response = await client.post("/users/token", json=data.model_dump())
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
 
 
-async def test_token_404_user_with_email_does_not_exist(
-    client: "httpx.AsyncClient", user_factory: factories.UserFactory
-):
+async def test_token_404_user_with_email_does_not_exist(client: "httpx.AsyncClient"):
     data = users_schemas.CreateToken(email="abc@abc.com", password="password")
 
     response = await client.post("/users/token", json=data.model_dump())
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
     response_json = response.json()
     assert response_json["detail"]["msg"] == users_exceptions.HTTPError.EMAIL_NOT_FOUND
@@ -78,7 +77,7 @@ async def test_token_400_wrong_password(
     data = users_schemas.CreateToken(email=user.email, password="wrong_password")
 
     response = await client.post("/users/token", json=data.model_dump())
-    assert response.status_code == 400
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     response_json = response.json()
     assert response_json["detail"]["msg"] == users_exceptions.HTTPError.WRONG_PASSWORD
@@ -91,7 +90,7 @@ async def test_logout(
     client, token = authorized_client
 
     response = await client.get("/users/logout")
-    assert response.status_code == 204
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
     token_in_db = (
         await session.execute(
@@ -105,4 +104,4 @@ async def test_logout(
 
 async def test_logout_204_not_authenticated(client: "httpx.AsyncClient"):
     response = await client.get("/users/logout")
-    assert response.status_code == 204
+    assert response.status_code == status.HTTP_204_NO_CONTENT
