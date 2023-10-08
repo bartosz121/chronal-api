@@ -11,12 +11,12 @@ from . import dependencies, exceptions, schemas
 router = APIRouter(
     tags=["users"],
     api_routes_responses={
-        "/register": {
-            201: {
+        "users:register": {
+            status.HTTP_201_CREATED: {
                 "description": "User successfully registered",
                 "model": schemas.UserRead,
             },
-            409: {
+            status.HTTP_409_CONFLICT: {
                 "description": "Email address already in use",
                 "model": api_schemas.Message,
                 "content": {
@@ -26,16 +26,12 @@ router = APIRouter(
                 },
             },
         },
-        "/token": {
-            201: {"description": "Token successfully created", "model": schemas.AccessToken},
-            404: {
-                "description": "User with given email does not exist",
-                "model": api_schemas.Message,
-                "content": {
-                    "application/json": {"example": {"msg": exceptions.HTTPError.EMAIL_NOT_FOUND}}
-                },
+        "users:token": {
+            status.HTTP_201_CREATED: {
+                "description": "Token successfully created",
+                "model": schemas.AccessToken,
             },
-            400: {
+            status.HTTP_400_BAD_REQUEST: {
                 "description": "Bad request",
                 "model": api_schemas.Message,
                 "content": {
@@ -48,8 +44,17 @@ router = APIRouter(
                     }
                 },
             },
+            status.HTTP_404_NOT_FOUND: {
+                "description": "User with given email does not exist",
+                "model": api_schemas.Message,
+                "content": {
+                    "application/json": {"example": {"msg": exceptions.HTTPError.EMAIL_NOT_FOUND}}
+                },
+            },
         },
-        "/logout": {204: {"description": "User successfully logged out"}},
+        "users:logout": {
+            status.HTTP_204_NO_CONTENT: {"description": "User successfully logged out"}
+        },
     },
 )
 
