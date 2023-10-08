@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from chronal_api.calendars.models import Calendar  # noqa: F401
 from chronal_api.lib.auth.models import AccessToken  # noqa: F401
 from chronal_api.lib.database.engine import Base, metadata  # noqa: F401
 from chronal_api.settings import DatabaseSettings
