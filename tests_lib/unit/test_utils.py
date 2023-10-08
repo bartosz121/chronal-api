@@ -6,7 +6,7 @@ from chronal_api.lib.repository.utils import sql_error_handler
 
 
 async def test_sql_error_handler_raises_conflict_error_on_integrity_error():
-    with pytest.raises(repository_exceptions.ConflictError) as exc:
+    with pytest.raises(repository_exceptions.Conflict) as exc:
         async with sql_error_handler():
             raise IntegrityError("", None, Exception())
 

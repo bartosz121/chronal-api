@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from chronal_api.log import get_logger
 
-from .exceptions import ConflictError, RepositoryException
+from .exceptions import Conflict, RepositoryException
 
 logger = get_logger()
 
@@ -16,7 +16,7 @@ async def sql_error_handler() -> AsyncIterator[None]:
         yield
     except IntegrityError as e:
         logger.error(str(e))
-        raise ConflictError from e
+        raise Conflict from e
     except SQLAlchemyError as e:
         logger.error(str(e))
         raise RepositoryException("An exception occurred while executing a SQL statement.") from e

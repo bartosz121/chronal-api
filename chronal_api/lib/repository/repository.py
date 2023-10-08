@@ -5,7 +5,7 @@ from typing import Any, Generic, TypeVar
 
 from sqlalchemy import Column
 
-from .exceptions import NotFoundError
+from .exceptions import NotFound
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -26,7 +26,7 @@ class Repository(Generic[T, U], ABC):
     @staticmethod
     async def check_not_found(item: T | None) -> T:
         if item is None:
-            raise NotFoundError("No record found.")
+            raise NotFound("No record found")
         return item
 
     @abstractmethod
