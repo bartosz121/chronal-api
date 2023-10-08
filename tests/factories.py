@@ -1,13 +1,18 @@
+import random
 from typing import Any
 
 import factory
 from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
+from faker import Faker
 
+from chronal_api.calendars import models as calendars_models
 from chronal_api.lib.auth import models as auth_models
 from chronal_api.lib.auth import security
 from chronal_api.users import models as users_models
 
 from .database import Session
+
+fake = Faker()
 
 
 class BaseFactory(AsyncSQLAlchemyFactory):
@@ -46,3 +51,21 @@ class AccessTokenFactory(BaseFactory):
         model = auth_models.AccessToken
 
     user = factory.SubFactory(UserFactory)
+
+
+class CalendarFactory(BaseFactory):
+    class Meta:
+        model = calendars_models.Calendar
+
+    title = factory.LazyAttribute(lambda _: fake.text(random.randint(16, 250)))
+    description = factory.LazyAttribute(
+        lambda _: fake.text(random.randint(5, 300))
+        if random.choice(
+            (
+                True,
+                False,
+            )
+        )
+        else None
+    )
+    owner = factory.SubFactory(UserFactory)
