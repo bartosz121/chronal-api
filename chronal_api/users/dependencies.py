@@ -7,7 +7,7 @@ from chronal_api.lib.database import dependencies as db_dependencies
 from . import repository, service
 
 
-async def user_service(session: db_dependencies.DbSession):
+async def user_service(session: db_dependencies.DbSession) -> service.UserService:
     return service.UserService(repository.UserRepository(session))
 
 
