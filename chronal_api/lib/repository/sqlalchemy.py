@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Any, Iterable, Literal, TypeVar
 
-from sqlalchemy import Select, delete, select
+from sqlalchemy import Select, delete
 from sqlalchemy import func as sqla_func
+from sqlalchemy import select
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -133,7 +134,7 @@ class SQLAlchemyRepository(Repository[T, U]):
         auto_expunge: bool | None = None,
     ) -> T:
         async with sql_error_handler():
-            instance = await self.get(id)
+            instance = await self.get(id)  # raises `NotFound`
             await self.session.delete(instance)
             await self._flush_or_commit(auto_commit=auto_commit)
             await self._expunge(instance, auto_expunge=auto_expunge)
@@ -298,7 +299,7 @@ class SQLAlchemyRepository(Repository[T, U]):
 
         async with sql_error_handler():
             data_id = getattr(data, self.model_id_attr_name)
-            await self.get(data_id)
+            await self.get(data_id)  # raises `NotFound`
             instance = await self._attach_to_session(data, strategy="merge")
             await self._flush_or_commit(auto_commit=auto_commit)
             await self._refresh(

@@ -2,9 +2,9 @@ class RepositoryException(Exception):
     """Base exception for repository errors"""
 
 
-class ConflictError(RepositoryException):
+class Conflict(RepositoryException):
     """Raised when a conflict is detected"""
 
 
-class NotFoundError(RepositoryException):
+class NotFound(RepositoryException):
     """Raised when a resource is not found"""

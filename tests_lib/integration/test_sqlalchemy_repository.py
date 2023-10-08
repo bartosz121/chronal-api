@@ -99,6 +99,11 @@ async def test_delete(session: AsyncSession, repo: TodoItemRepository):
     assert should_be_none is None
 
 
+async def test_delete_raises_not_found(session: AsyncSession, repo: TodoItemRepository):
+    with pytest.raises(repo_exceptions.NotFound):
+        await repo.delete(454544545)
+
+
 # Check your sqlite version if this fails, delete_many uses
 # `RETURNING` which is supported in 3.35.0+
 async def test_delete_many(session: AsyncSession, repo: TodoItemRepository):
@@ -160,7 +165,7 @@ async def test_get(session: AsyncSession, repo: TodoItemRepository):
 
 
 async def test_get_raises_not_found(repo: TodoItemRepository):
-    with pytest.raises(repo_exceptions.NotFoundError):
+    with pytest.raises(repo_exceptions.NotFound):
         await repo.get(999999)
 
 
@@ -168,7 +173,7 @@ async def test_get_one_raises_not_found(
     session: AsyncSession,
     repo: TodoItemRepository,
 ):
-    with pytest.raises(repo_exceptions.NotFoundError):
+    with pytest.raises(repo_exceptions.NotFound):
         await repo.get_one(999999)
 
 
@@ -251,6 +256,11 @@ async def test_update(session: AsyncSession, repo: TodoItemRepository):
     ).scalar_one_or_none()
     assert item_from_db is not None
     assert item_from_db.title == "Test update updated"
+
+
+async def test_update_raises_not_found(session: AsyncSession, repo: TodoItemRepository):
+    with pytest.raises(repo_exceptions.NotFound):
+        await repo.update(TodoItem(id=123123123, title="title", is_completed=False))
 
 
 async def test_update_many(session: AsyncSession, repo: TodoItemRepository):
